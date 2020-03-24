@@ -5,6 +5,7 @@ Run a simulation of the SRAS-COV2 protease in openMM. Then expose the simulation
 with Narupa with IMD.
 """
 
+import os
 import sys
 import multiprocessing
 import time
@@ -26,7 +27,9 @@ import matplotlib.cm
 
 VMD_PORT = 9000
 VMD_ADDRESS = '127.0.0.1'
+NARUPA_PORT = 9001
 
+HERE = os.path.dirname(__file__)
 # These files were provided by Helen with the following caveat:
 # > here are the inputs I have been using for a "proof of principle"
 # > simulation of MPro and a known inhibitor. Positions are in pdb format,
@@ -35,8 +38,8 @@ VMD_ADDRESS = '127.0.0.1'
 # > C terminus of the protein subunits are missing a few residues. I plan to
 # > fix this in a later iteration of the simulation, but for time purposes,
 # > I have been simulating as-is.
-PRMTOP = '6y2g_neutral_mono.prmtop'
-PDB = 'output.pdb'
+PRMTOP = os.path.join(HERE, '6y2g_neutral_mono.prmtop')
+PDB = os.path.join(HERE, 'output.pdb')
 
 
 def build_simulation(prmtop_path, pdb_path, add_imd=True):
@@ -68,6 +71,9 @@ def build_simulation(prmtop_path, pdb_path, add_imd=True):
         [0, 0, box_length],
     )
 
+    reporter = app.StateDataReporter(sys.stdout, 1000, speed=True)
+    simulation.reporters.append(reporter)
+
     return simulation
 
 
@@ -88,9 +94,9 @@ def run_narupa_server(prmtop_path, pdb_path, queue):
     topology_frame = build_topology_frame(simulation)
 
     connection = pyvmdimd.IMDClient(VMD_ADDRESS, VMD_PORT)
-    connection.set_transmission_rate(10)
+    connection.set_transmission_rate(5)
 
-    with NarupaImdApplication.basic_server(name='VMD-test') as server_app:
+    with NarupaImdApplication.basic_server(name='MPro', port=NARUPA_PORT) as server_app:
         print(f'Serving on {server_app.address}:{server_app.port}.')
         queue.put((server_app.address, server_app.port))
         adaptor = Adaptor(
