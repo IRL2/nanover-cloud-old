@@ -1,4 +1,5 @@
 FROM ubuntu:latest
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y bzip2 build-essential wget git curl unzip cmake
 
 # Install cuda from the nvidia repository
