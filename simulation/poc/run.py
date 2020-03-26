@@ -25,6 +25,7 @@ import networkx
 import matplotlib.cm
 
 
+PLATFORM = 'CUDA'
 VMD_PORT = 9000
 VMD_ADDRESS = '127.0.0.1'
 NARUPA_PORT = 9001
@@ -42,7 +43,7 @@ PRMTOP = os.path.join(HERE, '6y2g_neutral_mono.prmtop')
 PDB = os.path.join(HERE, 'output.pdb')
 
 
-def build_simulation(prmtop_path, pdb_path, add_imd=True):
+def build_simulation(prmtop_path, pdb_path, add_imd=True, platform_target='CPU'):
     prmtop = app.AmberPrmtopFile(prmtop_path)
     system = prmtop.createSystem(
         nonbondedMethod=app.CutoffNonPeriodic,
@@ -60,7 +61,8 @@ def build_simulation(prmtop_path, pdb_path, add_imd=True):
         1 / unit.picosecond,
         0.002 * unit.picoseconds,
     )
-    simulation = app.Simulation(prmtop.topology, system, integrator)
+    platform = mm.Platform.getPlatformByName(platform_target)
+    simulation = app.Simulation(prmtop.topology, system, integrator, platform)
 
     box_length = 10 * unit.nanometer
     pdb = app.PDBFile(pdb_path)
@@ -78,7 +80,9 @@ def build_simulation(prmtop_path, pdb_path, add_imd=True):
 
 
 def run_inifinite_simulation(prmtop_path, pdb_path, queue):
-    simulation = build_simulation(prmtop_path, pdb_path)
+    simulation = build_simulation(
+        prmtop_path, pdb_path, add_imd=True, platform_target=PLATFORM)
+    print(f'Running on platform {simulation.context.getPlatform().getName()}')
     while queue.empty():
         simulation.step(10000)
 
