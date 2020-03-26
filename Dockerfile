@@ -23,7 +23,7 @@ RUN conda update -n base -c defaults conda
 # The simulation script we aim to run uses features that are not yet merged
 # into master, and therefore not available on anaconda cloud. We get the conda
 # packages from the CI on the feature/python-vmd-imd branch.
-RUN wget https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/482974372/artifacts/download -O artifacts.zip
+RUN wget https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/486607716/artifacts/download -O artifacts.zip
 RUN unzip artifacts.zip
 RUN conda install -c omnia/label/cuda101 -c conda-forge -c ./conda-bld narupa-openmm narupa-pyvmdimd swig networkx matplotlib
 # The grpcio package from conda-forge seems to have an issue with SO_REUSE_PORT.
