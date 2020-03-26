@@ -28,7 +28,7 @@ import matplotlib.cm
 PLATFORM = 'CUDA'
 VMD_PORT = 9000
 VMD_ADDRESS = '127.0.0.1'
-NARUPA_PORT = 9001
+NARUPA_PORT = 54321
 
 HERE = os.path.dirname(__file__)
 # These files were provided by Helen with the following caveat:
