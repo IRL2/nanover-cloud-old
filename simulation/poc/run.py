@@ -194,6 +194,8 @@ if __name__ == '__main__':
         target=run_inifinite_simulation, args=(PRMTOP, PDB, kill_queue))
     openmm_process.start()
 
+    time.sleep(0.5)  # Give the VMD-IMD server enough time to start up
+
     narupa_process = multiprocessing.Process(
         target=run_narupa_server, args=(PRMTOP, PDB, server_queue))
     narupa_process.start()
