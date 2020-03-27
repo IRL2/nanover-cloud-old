@@ -194,19 +194,23 @@ if __name__ == '__main__':
         target=run_inifinite_simulation, args=(PRMTOP, PDB, kill_queue))
     openmm_process.start()
 
-    time.sleep(0.5)  # Give the VMD-IMD server enough time to start up
+    try:
+        time.sleep(0.5)  # Give the VMD-IMD server enough time to start up
 
-    narupa_process = multiprocessing.Process(
-        target=run_narupa_server, args=(PRMTOP, PDB, server_queue))
-    narupa_process.start()
+        narupa_process = multiprocessing.Process(
+            target=run_narupa_server, args=(PRMTOP, PDB, server_queue))
+        narupa_process.start()
 
-    address, port = server_queue.get()
-    setup_aestetics('127.0.0.1', port)
+        address, port = server_queue.get()
+        setup_aestetics('127.0.0.1', port)
 
-    # Since everything is running in the background, we need something to keep
-    # the main process busy.
-    while True:
-        time.sleep(1)
+        # Since everything is running in the background, we need something to keep
+        # the main process busy.
+        while True:
+            time.sleep(1)
 
-    # This stops openMM
-    kill_queue.put('STOP')
+    finally:
+        # This stops openMM.
+        kill_queue.put('STOP')
+        # This kills the pyvmdimd loop.
+        narupa_process.kill_loop()
