@@ -51,7 +51,7 @@ def build_simulation(prmtop_path, pdb_path, add_imd=True, platform_target='CPU')
         constraints=app.HBonds,
     )
     if add_imd:
-        wait = True  # whether to wait for a connection before running MD steps
+        wait = False  # whether to wait for a connection before running MD steps
         rate = 20  # rate (in frames) at which to send molecular dynamics positions to the client
         useInternalUnits = False  # whether to output with OpenMM's internal units, or VMD units (angstroms, kCal/mol).
         imdForce = openmmimd.ImdForce(VMD_ADDRESS, VMD_PORT, wait, rate, useInternalUnits)
@@ -212,5 +212,3 @@ if __name__ == '__main__':
     finally:
         # This stops openMM.
         kill_queue.put('STOP')
-        # This kills the pyvmdimd loop.
-        narupa_process.kill_loop()
