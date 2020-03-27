@@ -7,6 +7,7 @@
 
 set -eo pipefail
 
+NARUPA_PORT=38801
 MINICONDA_PATH="$HOME/miniconda"
 NARUPA_ARTIFACT_URL="https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/486607716/artifacts/download"
 
@@ -72,10 +73,8 @@ git clone https://gitlab.com/intangiblerealities/covid-docker.git
 
 # Open the port for Narupa
 # Note that the port must also be open in the subnet on OCI.
-# TODO: Use 38801 instead as it is now the default for narupa, This would
-#       reduce the amount of things to type in the client.
-sudo iptables -I INPUT 1 -p tcp --dport 54321 -j ACCEPT
-sudo iptables -I OUTPUT 1 -p tcp --dport 54321 -j ACCEPT
+sudo iptables -I INPUT 1 -p tcp --dport ${NARUPA_PORT} -j ACCEPT
+sudo iptables -I OUTPUT 1 -p tcp --dport ${NARUPA_PORT} -j ACCEPT
 sudo bash -c "iptables-save > /etc/iptables.rules"
 
 
