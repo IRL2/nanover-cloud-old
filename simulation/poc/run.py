@@ -19,6 +19,7 @@ import pyvmdimd
 from narupa.app import NarupaImdApplication, NarupaImdClient
 from narupa.vmdimd import Adaptor
 from narupa.openmm.converter import openmm_to_frame_data
+from narupa.utilities.timing import yield_interval
 
 import networkx
 
@@ -26,6 +27,8 @@ import matplotlib.cm
 
 
 PLATFORM = 'CUDA'
+GRACE_PERIOD_MINUTES = 15
+TIMEOUT_MINUTES = 5
 VMD_PORT = 9000
 VMD_ADDRESS = '127.0.0.1'
 NARUPA_PORT = 38801
@@ -112,9 +115,12 @@ def run_narupa_server(prmtop_path, pdb_path, queue):
         connection.set_energy_observer(adaptor.on_energies)
         connection.set_force_provider(adaptor.get_forces)
 
-        # At this point, the MD engine must be running as this command
-        # run the communication with the VMD server.
-        connection.loop()
+        try:
+            # At this point, the MD engine must be running as this command
+            # run the communication with the VMD server.
+            connection.loop()
+        except AssertionError:
+            print('Closing Narupa server')
 
 
 def get_chains(particle_count, bonds):
@@ -186,6 +192,43 @@ def setup_aestetics(address, port):
             }
 
 
+def is_active_avatar(current_avatars):
+    return any(avatar.components for avatar in current_avatars.values())
+
+
+def run_until_timeout(grace_minutes, timeout_minutes, address, port):
+    """
+    Loop until the timeout is over.
+
+    The timeout happens after a given number of minutes without VR client
+    connected. A grace period at the beginning of the loop give time for the
+    first client to connect. A connected VR client is defined as streaming an
+    avatar.
+
+    :param grace_minutes: number of minutes at the beginning of the loop during
+        which the timeout is ignored
+    :param timeout_minutes: number of minutes without VR client connected
+        before the function returns
+    :param address: The address of the Narupa server for the client to connect
+    :param port: The port of the Narupa server for the client to connect
+    """
+    timeout_seconds = timeout_minutes * 60
+    grace_seconds = grace_minutes * 60
+    with NarupaImdClient.connect_to_single_server(address, port) as client:
+        multiplayer = client._multiplayer_client
+        multiplayer.join_avatar_stream()
+        now = time.monotonic()
+        end_of_grace = now + grace_seconds
+        end_of_timeout = now + timeout_seconds
+        for _ in yield_interval(1):
+            now = time.monotonic()
+            if is_active_avatar(multiplayer.current_avatars):
+                end_of_timeout = now + timeout_seconds
+            if now > end_of_grace and now > end_of_timeout:
+                print('Timeout!')
+                return
+
+
 if __name__ == '__main__':
     kill_queue = multiprocessing.Queue()
     server_queue = multiprocessing.Queue()
@@ -201,14 +244,11 @@ if __name__ == '__main__':
             target=run_narupa_server, args=(PRMTOP, PDB, server_queue))
         narupa_process.start()
 
+        localhost = '127.0.0.1'
         address, port = server_queue.get()
-        setup_aestetics('127.0.0.1', port)
+        setup_aestetics(localhost, port)
 
-        # Since everything is running in the background, we need something to keep
-        # the main process busy.
-        while True:
-            time.sleep(1)
-
+        run_until_timeout(GRACE_PERIOD_MINUTES, TIMEOUT_MINUTES, localhost, port)
     finally:
         # This stops openMM.
         kill_queue.put('STOP')
