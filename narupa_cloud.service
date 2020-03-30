@@ -1,0 +1,14 @@
+[Unit]
+Description='Run narupa as a service'
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/ubuntu/codiv-docker/start.sh
+PIDFile=/run/narupa.pid
+ExecStop=/bin/kill $MAINPID
+User=ubuntu
+Group=ubuntu

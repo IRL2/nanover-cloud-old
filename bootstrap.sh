@@ -77,5 +77,10 @@ sudo iptables -I INPUT 1 -p tcp --dport ${NARUPA_PORT} -j ACCEPT
 sudo iptables -I OUTPUT 1 -p tcp --dport ${NARUPA_PORT} -j ACCEPT
 sudo bash -c "iptables-save > /etc/iptables.rules"
 
+# Add the systemd service to begin at startup.
+sudo cp covid-docker/narupa_cloud.service /etc/systemd/system
+sudo chmod 644 /etc/systemd/system/narupa_cloud.service
+chmod +x covid-docker/start.sh
+sudo systemctl enable narupa_cloud.service
 
 # TODO: Add some cleanup to avoid too much leftover files.
