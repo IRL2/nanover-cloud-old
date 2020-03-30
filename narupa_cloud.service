@@ -7,7 +7,7 @@ WantedBy=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/home/ubuntu/codiv-docker/start.sh
+ExecStart=/home/ubuntu/covid-docker/start.sh
 PIDFile=/run/narupa.pid
 ExecStop=/bin/kill $MAINPID
 User=ubuntu
