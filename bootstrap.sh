@@ -9,7 +9,7 @@ set -eo pipefail
 
 NARUPA_PORT=38801
 MINICONDA_PATH="$HOME/miniconda"
-NARUPA_ARTIFACT_URL="https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/492086300/artifacts/download"
+NARUPA_ARTIFACT_URL="https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/492642703/artifacts/download"
 
 # Avoid interuptions where apt ask a question.
 export DEBIAN_FRONTEND=noninteractive
