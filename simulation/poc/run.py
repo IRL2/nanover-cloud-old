@@ -115,10 +115,19 @@ def run_narupa_server(prmtop_path, pdb_path, queue):
         connection.set_energy_observer(adaptor.on_energies)
         connection.set_force_provider(adaptor.get_forces)
 
+        # At this point, the MD engine must be running as this command
+        # run the communication with the VMD server. It may take a long time
+        # though so we retry for a while.
         try:
-            # At this point, the MD engine must be running as this command
-            # run the communication with the VMD server.
-            connection.loop(connection_timeout=5)
+            timeout_end = time.monotonic() + 240
+            for _ in yield_interval(1):
+                try:
+                    connection.loop()
+                except OSError as err:
+                    if time.monotonic() > timeout_end:
+                        raise err
+                else:
+                    break
         except AssertionError:
             print('Closing Narupa server')
 
