@@ -118,7 +118,7 @@ def run_narupa_server(prmtop_path, pdb_path, queue):
         try:
             # At this point, the MD engine must be running as this command
             # run the communication with the VMD server.
-            connection.loop()
+            connection.loop(connection_timeout=5)
         except AssertionError:
             print('Closing Narupa server')
 
@@ -238,8 +238,6 @@ if __name__ == '__main__':
     openmm_process.start()
 
     try:
-        time.sleep(0.5)  # Give the VMD-IMD server enough time to start up
-
         narupa_process = multiprocessing.Process(
             target=run_narupa_server, args=(PRMTOP, PDB, server_queue))
         narupa_process.start()
