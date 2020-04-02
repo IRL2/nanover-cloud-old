@@ -21,4 +21,10 @@ instance_details = oci.core.models.LaunchInstanceDetails(
     shape=OCID['compute_shape'],
     subnet_id=OCID['subnet'],
 )
-compute_client.launch_instance(instance_details)
+try:
+    response = compute_client.launch_instance(instance_details)
+except oci.exceptions.ServiceError:
+    print('Sorry, could not launch a new instance. Try again latter.')
+else:
+    instance_id = response.data.id
+    print(instance_id)
