@@ -1,6 +1,9 @@
 import oci
 import time
 import datetime
+from narupa.trajectory.frame_client import FrameClient
+from narupa.protocol.trajectory import GetFrameRequest
+import grpc
 
 OCID = {
     'user': 'ocid1.user.oc1..aaaaaaaahtozgcevfxlu462v5trk6sldbfz7hckf2cfz4nm3udjxo6puhtla',
@@ -11,6 +14,7 @@ OCID = {
     'compute_shape': 'VM.GPU2.1',
 }
 LIFECYCLE_STATE_PROVISIONING = oci.core.models.Instance.LIFECYCLE_STATE_PROVISIONING
+NARUPA_PORT = 38801
 
 
 class NotEnoughRessources(Exception):
@@ -56,6 +60,18 @@ def _get_public_ip(compute_client, virtual_network_client, instance):
     return None
 
 
+def _get_narupa_status(public_ip, port):
+    channel = FrameClient.insecure_channel(address=public_ip, port=port)
+    request = GetFrameRequest()
+    try:
+        channel.stub.GetFrame(request, timeout=1)
+    except grpc._channel._Rendezvous as error:
+        return error.code() == grpc.StatusCode.UNIMPLEMENTED
+    finally:
+        channel.close()
+    return True
+
+
 def check_instance(instance_id):
     config = oci.config.from_file()
     config['user'] = OCID['user']
@@ -65,7 +81,10 @@ def check_instance(instance_id):
     instance = compute_client.get_instance(instance_id).data
     instance_status = instance.lifecycle_state
     public_ip = _get_public_ip(compute_client, virtual_network_client, instance)
-    return (instance_status, public_ip)
+    narupa_status = False
+    if public_ip:
+        narupa_status = _get_narupa_status(public_ip, NARUPA_PORT)
+    return (instance_status, public_ip, narupa_status)
 
 
 if __name__ == '__main__':
