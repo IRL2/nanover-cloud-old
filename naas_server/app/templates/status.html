@@ -4,7 +4,14 @@
 		<meta http-equiv="refresh" content="5">
 	</head>
 	<body>
-		<p>The time is {{ now }}.</p>
-		<p>The ID of the job is {{ job_id }}.</p>
+		{% if available %}
+		{% if narupa_status %}
+		<p>You can connect to {{ ip }}.</p>
+		{% else %}
+		<p>The job is in preparation.</p>
+		{% endif %}
+		{% else %}
+		<p>The job is unavailable.</p>
+		{% endif %}
 	</body>
 </html>
