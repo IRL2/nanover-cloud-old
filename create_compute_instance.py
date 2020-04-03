@@ -6,7 +6,6 @@ from narupa.protocol.trajectory import GetFrameRequest
 import grpc
 
 OCID = {
-    'user': 'ocid1.user.oc1..aaaaaaaahtozgcevfxlu462v5trk6sldbfz7hckf2cfz4nm3udjxo6puhtla',
     'compartment': 'ocid1.compartment.oc1..aaaaaaaathog42trqnbx2j56vnhlm5ok7w3wqq323d5jn4ol4x7aoo3nlzsa',
     'image': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaajgpyfsp2spy7cgtnzozm4vp4l3chtcpioloh4faqlqhkg2ofmqwq',
     'subnet': 'ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaamyov5n3yvt33o3s7pmbtbkvexj4dbfwpmagrgahgnzdsziaubdfa',
@@ -21,12 +20,19 @@ class NotEnoughRessources(Exception):
     pass
 
 
+def make_credentials():
+    try:
+        config = oci.config.from_file()
+    except oci.exceptions.ConfigFileNotFound:
+        signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+        return {'config': {}, 'signer': signer}
+    return {'config': config}
+
+
 def launch_compute_instance():
-    config = oci.config.from_file()
-    config['user'] = OCID['user']
     compartment_id = OCID['compartment']
 
-    compute_client = oci.core.ComputeClient(config)
+    compute_client = oci.core.ComputeClient(**make_credentials())
     compute_composite = oci.core.ComputeClientCompositeOperations(compute_client)
     instance_details = oci.core.models.LaunchInstanceDetails(
         availability_domain=OCID['availability_domain'],
@@ -73,11 +79,8 @@ def _get_narupa_status(public_ip, port):
 
 
 def check_instance(instance_id):
-    config = oci.config.from_file()
-    config['user'] = OCID['user']
-
-    compute_client = oci.core.ComputeClient(config)
-    virtual_network_client = oci.core.VirtualNetworkClient(config)
+    compute_client = oci.core.ComputeClient(**make_credentials())
+    virtual_network_client = oci.core.VirtualNetworkClient(**make_credentials())
     instance = compute_client.get_instance(instance_id).data
     instance_status = instance.lifecycle_state
     public_ip = _get_public_ip(compute_client, virtual_network_client, instance)
