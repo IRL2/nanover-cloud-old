@@ -8,7 +8,7 @@ function terminate() {
 
 # Limit the lifetime of the instance. Terminate the instance after the given
 # duration if nothing else did it before.
-(sleep $INSTANCE_LIFETIME; terminate)
+(sleep $INSTANCE_LIFETIME; terminate)&
 
 # Open the port.
 sudo iptables -I INPUT 1 -p tcp --dport 38801 -j ACCEPT
