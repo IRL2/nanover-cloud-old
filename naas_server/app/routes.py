@@ -39,7 +39,7 @@ def status(job_id):
     except Exception as err:
         print(err)
         available = False
-    if oci_state not in STATES_AVAILABLE:
+    if available and oci_state not in STATES_AVAILABLE:
         available = False
     variables = {
         'ip': ip,
