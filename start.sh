@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTANCE_LIFETIME='1h'
+INSTANCE_LIFETIME='30m'
 
 function terminate() {
     echo y | $HOME/bin/oci compute instance --auth instance_principal terminate --instance-id $(curl http://169.254.169.254/opc/v1/instance/id)
