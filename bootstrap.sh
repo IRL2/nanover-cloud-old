@@ -29,7 +29,7 @@ sudo mv cuda-ubuntu1804.pin /etc/apt/preferences.d/cuda-repository-pin-600
 sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
 sudo add-apt-repository "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /"
 sudo apt-get update
-DEBIAN_FRONTEND=noninteractive sudo apt-get -y install cuda-10-1
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cuda-10-1
 
 
 # We package Narupa using conda. Here we install conda.
