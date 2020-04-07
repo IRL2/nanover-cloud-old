@@ -7,7 +7,7 @@ import grpc
 
 OCID = {
     'compartment': 'ocid1.compartment.oc1..aaaaaaaathog42trqnbx2j56vnhlm5ok7w3wqq323d5jn4ol4x7aoo3nlzsa',
-    'image': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaajgpyfsp2spy7cgtnzozm4vp4l3chtcpioloh4faqlqhkg2ofmqwq',
+    'image': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa67ytagb2mlaadxowiqlnl6isbackop3uw3y44epgtyplttjwzbtq',
     'subnet': 'ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaamyov5n3yvt33o3s7pmbtbkvexj4dbfwpmagrgahgnzdsziaubdfa',
     'availability_domain': 'DpyF:EU-FRANKFURT-1-AD-3',
     'compute_shape': 'VM.GPU2.1',
