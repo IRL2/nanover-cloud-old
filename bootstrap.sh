@@ -10,6 +10,7 @@ set -eo pipefail
 NARUPA_PORT=38801
 MINICONDA_PATH="$HOME/miniconda"
 NARUPA_ARTIFACT_URL="https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/492642703/artifacts/download"
+OCI_INSTALLER_URL="https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh"
 
 # Avoid interuptions where apt ask a question.
 export DEBIAN_FRONTEND=noninteractive
@@ -63,6 +64,12 @@ cmake ../openmm-vmd-imd \
     -DCMAKE_BUILD_TYPE=RELEASE
 make && make install && make PythonInstall
 cd ..
+
+
+# Install the OCI CLI
+wget ${OCI_INSTALLER_URL} -O oci_install.sh
+bash oci_install.sh --accept-all-defaults
+rm oci_install.sh
 
 
 # Obtain the simulation script
