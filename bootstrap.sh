@@ -18,7 +18,7 @@ export DEBIAN_FRONTEND=noninteractive
 sudo apt update
 sudo apt upgrade -y  # We are responsible for keeping the OS up to date
 
-sudo apt-get install -y bzip2 build-essential wget git curl unzip cmake
+sudo apt-get install -y bzip2 build-essential wget git curl unzip cmake apt-utils
 
 # Install cuda from the nvidia repository
 # TODO: installing the "cuda" package comes with hundreds of packages as
