@@ -34,6 +34,7 @@ def status(job_id):
     available = True
     ip = ''
     narupa_status = False
+    oci_state = None
     try:
         oci_state, ip, narupa_status = libinstance.check_instance(job_id)
     except Exception as err:
