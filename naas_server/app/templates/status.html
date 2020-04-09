@@ -1,7 +1,9 @@
 <html>
 	<head>
 		<title>Narupa as a Service</title>
+		{% if available %}
 		<meta http-equiv="refresh" content="5">
+		{% endif %}
 	</head>
 	<body>
 		{% if available %}
@@ -12,6 +14,7 @@
 		{% endif %}
 		{% else %}
 		<p>The job is unavailable.</p>
+		<p><a href="{{ url_for('index') }}">Back to home page</a></p>
 		{% endif %}
 	</body>
 </html>
