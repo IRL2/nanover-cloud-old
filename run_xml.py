@@ -31,7 +31,7 @@ import networkx
 import matplotlib.cm
 
 
-PLATFORM = 'CPU'
+PLATFORM = 'CUDA'
 GRACE_PERIOD_MINUTES = 10
 TIMEOUT_MINUTES = 5
 VMD_PORT = 9000
