@@ -16,7 +16,7 @@ sudo iptables -I OUTPUT 1 -p tcp --dport 38801 -j ACCEPT
 sudo bash -c "iptables-save > /etc/iptables.rules"
 
 # Download the input file
-filename=$(curl http://169.254.169.254/opc/v1/instance/metadata/)
+filename=$(curl http://169.254.169.254/opc/v1/instance/metadata/filename)
 oci --auth instance_principal os object get --namespace uobvr --bucket-name naas-bucket --name $filename --file $HOME/simulation.xml
 
 # Actually run the narupa server
