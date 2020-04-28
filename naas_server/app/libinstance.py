@@ -30,7 +30,7 @@ def make_credentials():
     return {'config': config}
 
 
-def launch_compute_instance():
+def launch_compute_instance(filename='helen.xml'):
     with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as infile:
         ssh_key = infile.read()
     compartment_id = OCID['compartment']
@@ -43,8 +43,7 @@ def launch_compute_instance():
         image_id=OCID['image'],
         shape=OCID['compute_shape'],
         subnet_id=OCID['subnet'],
-        metadata={'filename': 'helen.xml', 'ssh_authorized_keys': ssh_key},
-        #metadata={'filename': '6w63_narupa2.xml', 'ssh_authorized_keys': ssh_key},
+        metadata={'filename': filename, 'ssh_authorized_keys': ssh_key},
     )
     try:
         response = compute_composite.launch_instance_and_wait_for_state(
