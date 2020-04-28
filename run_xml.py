@@ -273,7 +273,7 @@ if __name__ == '__main__':
 
         localhost = '127.0.0.1'
         address, port = server_queue.get()
-        setup_aestetics(localhost, port)
+        #setup_aestetics(localhost, port)
 
         run_until_timeout(GRACE_PERIOD_MINUTES, TIMEOUT_MINUTES, localhost, port)
     finally:
