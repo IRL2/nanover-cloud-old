@@ -1,3 +1,4 @@
+import os
 import oci
 import time
 import datetime
@@ -7,7 +8,7 @@ import grpc
 
 OCID = {
     'compartment': 'ocid1.compartment.oc1..aaaaaaaathog42trqnbx2j56vnhlm5ok7w3wqq323d5jn4ol4x7aoo3nlzsa',
-    'image': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa67ytagb2mlaadxowiqlnl6isbackop3uw3y44epgtyplttjwzbtq',
+    'image': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaj77yk7m7xtvfg2iecdvg47zd5d5zr6gdn56mak56kffp2awtuj4q',
     'subnet': 'ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaamyov5n3yvt33o3s7pmbtbkvexj4dbfwpmagrgahgnzdsziaubdfa',
     'availability_domain': 'DpyF:EU-FRANKFURT-1-AD-3',
     'compute_shape': 'VM.GPU2.1',
@@ -30,6 +31,8 @@ def make_credentials():
 
 
 def launch_compute_instance():
+    with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as infile:
+        ssh_key = infile.read()
     compartment_id = OCID['compartment']
 
     compute_client = oci.core.ComputeClient(**make_credentials())
@@ -40,6 +43,8 @@ def launch_compute_instance():
         image_id=OCID['image'],
         shape=OCID['compute_shape'],
         subnet_id=OCID['subnet'],
+        metadata={'filename': 'helen.xml', 'ssh_authorized_keys': ssh_key},
+        #metadata={'filename': '6w63_narupa2.xml', 'ssh_authorized_keys': ssh_key},
     )
     try:
         response = compute_composite.launch_instance_and_wait_for_state(

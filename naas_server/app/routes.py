@@ -23,9 +23,9 @@ def launch():
         job_id = libinstance.launch_compute_instance()
     except libinstance.NotEnoughRessources:
         return 'No resource available. Try again later.'
-    except Exception as err:
-        print(err)
-        return 'Something unexpected happened.'
+    #except Exception as err:
+    #    print(err)
+    #    return 'Something unexpected happened.'
     return redirect(url_for('status', job_id=job_id))
 
 
@@ -46,5 +46,6 @@ def status(job_id):
         'ip': ip,
         'narupa_status': narupa_status,
         'available': available,
+        'oci_state': oci_state,
     }
     return render_template('status.html', **variables)

@@ -11,6 +11,9 @@
 		<p>You can connect to {{ ip }}.</p>
 		{% else %}
 		<p>The job is in preparation.</p>
+		{% if oci_state == 'RUNNING' %}
+		<p>Waiting for Narupa</p>
+		{% endif %}
 		{% endif %}
 		{% else %}
 		<p>The job is unavailable.</p>
