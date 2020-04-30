@@ -111,7 +111,8 @@ def run_inifinite_simulation(xml_path, queue):
 def build_topology_frame(simulation):
     topology = simulation.topology
     system = simulation.system
-    return openmm_to_frame_data(topology=topology, system=system)
+    state = simulation.context.getState(getPositions=True)
+    return openmm_to_frame_data(topology=topology, system=system, state=state)
 
 
 def run_narupa_server(xml_path, queue):
