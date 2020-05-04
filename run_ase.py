@@ -50,6 +50,9 @@ class CloudRunner:
     
     def _get_avatars(self):
         return self._runner.app_server._multiplayer._avatars.copy_content()
+
+    def has_active_avatar(self):
+        return any(avatar.components for avatar in self._get_avatars().values())
     
     def get_timeout_checker(self):
         starting_time = time.monotonic()
@@ -58,7 +61,8 @@ class CloudRunner:
         end_walltime = starting_time + self.walltime
         while True:
             now = time.monotonic()
-            if self._get_avatars():
+            if self.has_active_avatar():
+                print('yes')
                 end_timeout = now + self.timeout
             passed_walltime = now > end_walltime
             passed_timeout = now > end_connection_delay and now > end_timeout
