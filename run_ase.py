@@ -62,7 +62,6 @@ class CloudRunner:
         while True:
             now = time.monotonic()
             if self.has_active_avatar():
-                print('yes')
                 end_timeout = now + self.timeout
             passed_walltime = now > end_walltime
             passed_timeout = now > end_connection_delay and now > end_timeout
