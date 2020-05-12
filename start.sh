@@ -21,7 +21,7 @@ echo "Trying to get ${filename}"
 $HOME/bin/oci --auth instance_principal os object get --namespace uobvr --bucket-name naas-bucket --name $filename --file $HOME/simulation.xml
 
 # Actually run the narupa server
-$HOME/miniconda/bin/python $HOME/covid-docker/run_ase.py $HOME/simulation.xml
+$HOME/miniconda/bin/python $HOME/covid-docker/run_omm.py $HOME/simulation.xml
 
 # Terminate the instance if the script crashed or timed out
 terminate
