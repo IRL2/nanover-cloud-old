@@ -9,7 +9,6 @@ set -eo pipefail
 
 NARUPA_PORT=38801
 MINICONDA_PATH="$HOME/miniconda"
-NARUPA_ARTIFACT_URL="https://gitlab.com/intangiblerealities/narupa-protocol/-/jobs/492642703/artifacts/download"
 OCI_INSTALLER_URL="https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh"
 
 # Avoid interuptions where apt ask a question.
@@ -32,7 +31,7 @@ sudo apt-get update
 sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cuda-10-1
 
 
-# We package Narupa using conda. Here we install conda.
+# Here we install conda.
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 bash miniconda.sh -b -p $MINICONDA_PATH && rm miniconda.sh
 PATH="${MINICONDA_PATH}/bin:$PATH"
@@ -41,7 +40,7 @@ source $HOME/.bashrc
 conda update -y -n base -c defaults conda
 
 
-conda install -y -c omnia/label/cuda101 -c conda-forge -c irl narupa-ase narupa-openmm
+conda install -y -c omnia/label/cuda101 -c conda-forge openmm MDAnalysis MDAnalysisTests ase mpi4py
 # The grpcio package from conda-forge seems to have an issue with SO_REUSE_PORT.
 # We overwrite the package by the one provided on pypi that does not have the
 # problem.
@@ -55,10 +54,8 @@ bash oci_install.sh --accept-all-defaults
 rm oci_install.sh
 
 
-# Obtain the simulation script
-# TODO: store simulation inputs and script in a file bucket so they can be
-#       added and modified without the need to alter the VM image.
-git clone https://gitlab.com/intangiblerealities/covid-docker.git
+# Get the narupa cloud source code
+git clone https://gitlab.com/intangiblerealities/covid-docker.git --branch updated
 
 
 # Open the port for Narupa

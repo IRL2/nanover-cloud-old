@@ -1,6 +1,7 @@
 #!/bin/bash
 
 INSTANCE_LIFETIME='30m'
+NARUPA_BRANCH='master'
 
 function terminate() {
     echo y | $HOME/bin/oci compute instance --auth instance_principal terminate --instance-id $(curl http://169.254.169.254/opc/v1/instance/id)
@@ -19,6 +20,12 @@ sudo bash -c "iptables-save > /etc/iptables.rules"
 filename=$(curl http://169.254.169.254/opc/v1/instance/metadata/filename)
 echo "Trying to get ${filename}"
 $HOME/bin/oci --auth instance_principal os object get --namespace uobvr --bucket-name naas-bucket --name $filename --file $HOME/simulation.xml
+
+# Get the lastest narupa
+git clone https://gitlab.com/intangiblerealities/narupa-protocol.git --branch ${NARUPA_BRANCH}
+cd narupa-protocol
+./compile.sh
+cd ../
 
 # Actually run the narupa server
 $HOME/miniconda/bin/python $HOME/covid-docker/run_omm.py $HOME/simulation.xml
