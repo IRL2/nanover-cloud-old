@@ -41,29 +41,12 @@ source $HOME/.bashrc
 conda update -y -n base -c defaults conda
 
 
-# The simulation script we aim to run uses features that are not yet merged
-# into master, and therefore not available on anaconda cloud. We get the conda
-# packages from the CI on the feature/python-vmd-imd branch.
-wget ${NARUPA_ARTIFACT_URL} -O artifacts.zip
-unzip artifacts.zip
-conda install -y -c omnia/label/cuda101 -c conda-forge -c ./conda-bld narupa-openmm narupa-pyvmdimd swig networkx matplotlib
+conda install -y -c omnia/label/cuda101 -c conda-forge -c irl narupa-ase narupa-openmm
 # The grpcio package from conda-forge seems to have an issue with SO_REUSE_PORT.
 # We overwrite the package by the one provided on pypi that does not have the
 # problem.
 # TODO: report the issue upstream.
 pip install --ignore-installed grpcio
-
-
-# Compile the vmd-imd plugin for openMM
-git clone https://gitlab.com/intangiblerealities/narupaplugins/openmm-vmd-imd.git
-mkdir build && cd build
-cmake ../openmm-vmd-imd \
-    -DOPENMM_DIR=${MINICONDA_PATH} \
-    -DCMAKE_INSTALL_PREFIX=${MINICONDA_PATH} \
-    -DUSE_OLD_CXX11_ABI=on \
-    -DCMAKE_BUILD_TYPE=RELEASE
-make && make install && make PythonInstall
-cd ..
 
 
 # Install the OCI CLI
