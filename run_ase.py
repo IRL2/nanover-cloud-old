@@ -60,19 +60,20 @@ class CloudRunner:
         end_timeout = starting_time + self.timeout
         end_walltime = starting_time + self.walltime
         while True:
-            now = time.monotonic()
-            if self.has_active_avatar():
-                end_timeout = now + self.timeout
-            passed_walltime = now > end_walltime
-            passed_timeout = now > end_connection_delay and now > end_timeout
-            yield passed_walltime or passed_timeout
+            yield False
+            #now = time.monotonic()
+            #if self.has_active_avatar():
+            #    end_timeout = now + self.timeout
+            #passed_walltime = now > end_walltime
+            #passed_timeout = now > end_connection_delay and now > end_timeout
+            #yield passed_walltime or passed_timeout
     
     def run(self):
         self.end_time = time.monotonic() + self.walltime
         self._running = True
         
         timeout_cheker = self.get_timeout_checker()
-        while not next(timeout_cheker):
+        while True:
             if self._running:
                 self._runner.run(5)
             else:
