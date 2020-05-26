@@ -27,9 +27,11 @@ def isness():
 def git():
     simulation_list = libinstance.list_simulations()
     return render_template(
-            'gitindex.html',
-            launch_url=url_for('gitlaunch'),
-            simulation_list=simulation_list)
+        'gitindex.html',
+        launch_url=url_for('gitlaunch'),
+        simulation_list=simulation_list,
+        region_list=libinstance.INSTANCE_PARAM.keys(),
+    )
 
 
 @app.route('/launch', defaults={'filename': None, 'image': 'default'})
@@ -44,17 +46,18 @@ def gitlaunch():
     return launch_instance(
         #filename='40-ALA.narupa2.xml',
         filename=request.form['simulation'],
+        region=request.form['region'],
         image='git',
         extra_meta={'branch': request.form['narupa_protocol']},
     )
 
 
-def launch_instance(filename=None, image='default', extra_meta={}):
+def launch_instance(filename=None, region='Frankfurt', image='default', extra_meta={}):
     if filename is None:
         filename = DEFAULT_FILENAME
     try:
         job_id = libinstance.launch_compute_instance(
-                filename, image=image, extra_meta=extra_meta)
+                filename, region=region, image=image, extra_meta=extra_meta)
     except libinstance.NotEnoughRessources:
         return 'No resource available. Try again later.'
     #except Exception as err:

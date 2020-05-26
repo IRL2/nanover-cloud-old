@@ -32,6 +32,27 @@ BUCKET = 'naas-bucket'
 LIFECYCLE_STATE_PROVISIONING = oci.core.models.Instance.LIFECYCLE_STATE_PROVISIONING
 NARUPA_PORT = 38801
 
+INSTANCE_PARAM = {
+    'Frankfurt': {
+        'images': {
+            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaauscs5yvcd4kpmjbdotmrfikmytnk5srwkbqdfz6gfbmtb4zekja',
+            'ase': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa7z3oigk4mh4dirxzwusvcldp6s7lhratzpbzbaywsxew62h5eyfq',
+            'omm': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatm3ehj6kq72wtiguat6oe6wom32kyyyn7h2ukltphobpq3audmha',
+        },
+        'subnet': 'ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaamyov5n3yvt33o3s7pmbtbkvexj4dbfwpmagrgahgnzdsziaubdfa',
+        'availability_domain': 'DpyF:EU-FRANKFURT-1-AD-3',
+        'compute_shape': 'VM.GPU2.1',
+    },
+    'London': {
+        'images': {
+            'git': 'ocid1.image.oc1.uk-london-1.aaaaaaaavyeaeqlhuoer5efyb5dlzdza4ipr2qxuebruzczugzee5u4bsihq',
+        },
+        'subnet': 'ocid1.subnet.oc1.uk-london-1.aaaaaaaaf7nx3mnvh6yp4dwnpk4otbb6i2k2egvhduokctcf7bnmyumja2aq',
+        'availability_domain': 'DpyF:UK-LONDON-1-AD-2',
+        'compute_shape': 'VM.GPU3.1',
+    },
+}
+
 
 class NotEnoughRessources(Exception):
     pass
@@ -46,7 +67,7 @@ def make_credentials():
     return {'config': config}
 
 
-def launch_compute_instance(filename='helen.xml', image='default', extra_meta={}):
+def launch_compute_instance(filename='helen.xml', region='Frankfurt', image='git', extra_meta={}):
     with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as infile:
         ssh_key = infile.read()
     metadata = dict(filename=filename, ssh_authorized_keys=ssh_key, **extra_meta)
@@ -55,11 +76,11 @@ def launch_compute_instance(filename='helen.xml', image='default', extra_meta={}
     compute_client = oci.core.ComputeClient(**make_credentials())
     compute_composite = oci.core.ComputeClientCompositeOperations(compute_client)
     instance_details = oci.core.models.LaunchInstanceDetails(
-        availability_domain=OCID['availability_domain'],
+        availability_domain=INSTANCE_PARAM[region]['availability_domain'],
         compartment_id=compartment_id,
-        image_id=IMAGES[image],
-        shape=OCID['compute_shape'],
-        subnet_id=OCID['subnet'],
+        image_id=INSTANCE_PARAM[region]['images'][image],
+        shape=INSTANCE_PARAM[region]['compute_shape'],
+        subnet_id=INSTANCE_PARAM[region]['subnet'],
         metadata=metadata,
     )
     try:
