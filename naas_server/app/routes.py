@@ -48,7 +48,10 @@ def gitlaunch():
         filename=request.form['simulation'],
         region=request.form['region'],
         image='git',
-        extra_meta={'branch': request.form['narupa_protocol']},
+        extra_meta={
+            'branch': request.form['narupa_protocol'],
+            'runner': request.form['runner'],
+        },
     )
 
 

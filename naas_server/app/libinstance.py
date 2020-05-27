@@ -35,7 +35,8 @@ NARUPA_PORT = 38801
 INSTANCE_PARAM = {
     'Frankfurt': {
         'images': {
-            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaauscs5yvcd4kpmjbdotmrfikmytnk5srwkbqdfz6gfbmtb4zekja',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaauscs5yvcd4kpmjbdotmrfikmytnk5srwkbqdfz6gfbmtb4zekja',
+            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaubantlbxghq7z5dltq2trs4tnwkk55yckq4huvqoa6zkr3bopbza',
             'ase': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa7z3oigk4mh4dirxzwusvcldp6s7lhratzpbzbaywsxew62h5eyfq',
             'omm': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatm3ehj6kq72wtiguat6oe6wom32kyyyn7h2ukltphobpq3audmha',
         },
@@ -63,11 +64,17 @@ def make_credentials():
         config = oci.config.from_file()
     except oci.exceptions.ConfigFileNotFound:
         signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+        #signer = oci.auth.signers.get_resource_principals_signer()
         return {'config': {}, 'signer': signer}
     return {'config': config}
 
 
-def launch_compute_instance(filename='helen.xml', region='Frankfurt', image='git', extra_meta={}):
+def launch_compute_instance(
+        filename='helen.xml',
+        region='Frankfurt',
+        image='git',
+        extra_meta={}
+    ):
     with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as infile:
         ssh_key = infile.read()
     metadata = dict(filename=filename, ssh_authorized_keys=ssh_key, **extra_meta)
