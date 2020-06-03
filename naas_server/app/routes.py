@@ -150,6 +150,9 @@ def local_launch():
         filename=request.json['simulation']
     except:
         raise BadRequest
+    if ('region' in request.json
+            and request.json['region'] != get_current_region()):
+        raise BadRequest
 
     region = request.json.get('region', 'Frankfurt')
     extra_meta = {
