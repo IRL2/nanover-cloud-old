@@ -52,6 +52,14 @@ INSTANCE_PARAM = {
         'availability_domain': 'DpyF:UK-LONDON-1-AD-2',
         'compute_shape': 'VM.GPU3.1',
     },
+    'Ashburn': {
+        'images': {
+            'git': 'ocid1.image.oc1.iad.aaaaaaaagbae26omobfzbceqx2w77jv7kmz6v2nlrhtu6chyo5y5gms7v4ha',
+        },
+        'subnet': 'ocid1.subnet.oc1.iad.aaaaaaaafou4wxm6lgorngus66t5cwdatkvvqqinzpoz7l4quvd2k5izalsq',
+        'availability_domain': 'DpyF:US-ASHBURN-AD-2',
+        'compute_shape': 'VM.GPU3.2',
+    },
 }
 
 
