@@ -144,16 +144,6 @@ def terminate_instance(instance_id):
     compute_client.terminate_instance(instance_id)
 
 
-def list_simulations():
-    storage_client = oci.object_storage.ObjectStorageClient(**make_credentials())
-    raw_list = storage_client.list_objects(
-        namespace_name=NAMESPACE,
-        bucket_name=BUCKET,
-        fields=['name'],
-    ).data
-    return [obj.name for obj in raw_list.objects]
-
-
 if __name__ == '__main__':
     try:
         instance_id = launch_compute_instance()
