@@ -1,3 +1,4 @@
+import requests
 import datetime
 import uuid
 import oci
@@ -10,7 +11,12 @@ STATES_AVAILABLE = (
     oci.core.models.Instance.LIFECYCLE_STATE_RUNNING,
 )
 DEFAULT_FILENAME = 'helen.xml'
+MANIFEST = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/master/manifest.txt'
 
+
+def available_inputs():
+    response = requests.get(MANIFEST).content.decode('utf-8-sig')
+    return response.splitlines()
 
 @app.route('/')
 @app.route('/index')
@@ -25,7 +31,7 @@ def isness():
 
 @app.route('/git')
 def git():
-    simulation_list = libinstance.list_simulations()
+    simulation_list = available_inputs()
     return render_template(
         'gitindex.html',
         launch_url=url_for('gitlaunch'),
