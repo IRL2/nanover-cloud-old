@@ -185,8 +185,8 @@ def api_status(job_id):
         return local_status(job_id)
     if region not in REGIONS:
         raise NotFound
-    return requests.get(f"{REGIONS[region]['url']}/local/v1/instance/{job_id}")
-
+    target = f"{REGIONS[region]['url']}/local/v1/instance/{job_id}"
+    return jsonify(requests.get(target).json())
 
 @app.route('/api/v1/instance/<job_id>', methods=['DELETE'])
 def api_terminate(job_id):
@@ -195,7 +195,8 @@ def api_terminate(job_id):
         return local_terminate(job_id)
     if region not in REGIONS:
         raise NotFound
-    return requests.delete(f"{REGIONS[region]['url']}/local/v1/instance/{job_id}")
+    target = f"{REGIONS[region]['url']}/local/v1/instance/{job_id}"
+    return jsonify(requests.delete(target).json())
 
 
 @app.route('/api/v1/instance', methods=['POST'])
@@ -207,8 +208,9 @@ def api_launch():
         return local_launch()
     if region not in REGIONS:
         raise NotFound
-    return requests.post(
+    response = requests.post(
         f"{REGIONS[region]['url']}/local/v1/instance",
-        data=request.json,
+        data=json.dumps(request.json),
         headers={"Content-Type": "application/json"},
     )
+    return jsonify(response.json())
