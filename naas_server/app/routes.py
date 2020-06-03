@@ -1,6 +1,7 @@
 import requests
 import datetime
 import uuid
+import json
 import oci
 from . import libinstance
 from flask import render_template, url_for, redirect, request, jsonify
@@ -22,6 +23,8 @@ REGION_STRINGS = {
     description['string']: region
     for region, description in REGIONS.items()
 }
+BASE_REGION = 'Frankfurt'
+NOT_ENOUGH_RESSOURCES = 'not enough ressources'
 
 
 def available_inputs():
@@ -59,16 +62,20 @@ def launch(filename=None, image='default'):
 
 @app.route('/gitlaunch', methods=['POST'])
 def gitlaunch():
-    return launch_instance(
-        #filename='40-ALA.narupa2.xml',
-        filename=request.form['simulation'],
-        region=request.form['region'],
-        image='git',
-        extra_meta={
-            'branch': request.form['narupa_protocol'],
-            'runner': request.form['runner'],
-        },
+    data = json.dumps(request.form)
+    response = requests.post(
+        REGIONS[BASE_REGION]['url']
+        + url_for('api_launch'),
+        data=data,
+        headers={"Content-Type": "application/json"},
     )
+    response.raise_for_status()
+    response_json = response.json()
+    if response_json['status'] == 'success':
+        job_id = response_json['jobid']
+        return redirect(url_for('status', job_id=job_id))
+    elif response_json['status'] == NOT_ENOUGH_RESSOURCES:
+        return 'No resource available. Try again later.'
 
 
 def launch_instance(filename=None, region='Frankfurt', image='default', extra_meta={}):
@@ -87,30 +94,20 @@ def launch_instance(filename=None, region='Frankfurt', image='default', extra_me
 
 @app.route('/status/<job_id>')
 def status(job_id):
-    available = True
-    ip = ''
-    narupa_status = False
-    oci_state = None
-    try:
-        oci_state, ip, narupa_status = libinstance.check_instance(job_id)
-    except Exception as err:
-        print(err)
-        available = False
-    if available and oci_state not in STATES_AVAILABLE:
-        available = False
-    variables = {
-        'ip': ip,
-        'narupa_status': narupa_status,
-        'available': available,
-        'oci_state': oci_state,
-        'terminate_url': url_for('terminate', job_id=job_id),
-    }
+    variables = requests.get(
+        REGIONS[BASE_REGION]['url']
+        + url_for('api_status', job_id=job_id)
+    ).json()
+    variables['terminate_url'] = url_for('terminate', job_id=job_id)
     return render_template('status.html', **variables)
 
 
 @app.route('/terminate/<job_id>')
 def terminate(job_id):
-    libinstance.terminate_instance(job_id)
+    requests.delete(
+        REGIONS[BASE_REGION]['url']
+        + url_for('api_status', job_id=job_id)
+    )
     return redirect(url_for('status', job_id=job_id))
 
 
@@ -164,7 +161,7 @@ def local_launch():
         job_id = libinstance.launch_compute_instance(
                 filename, region=region, image='git', extra_meta=extra_meta)
     except libinstance.NotEnoughRessources:
-        return jsonify({'status': 'not enough ressources'})
+        return jsonify({'status': NOT_ENOUGH_RESSOURCES})
     except:
         return jsonify({'status': 'failed'})
     
