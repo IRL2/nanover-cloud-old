@@ -36,7 +36,7 @@ INSTANCE_PARAM = {
     'Frankfurt': {
         'images': {
             #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaauscs5yvcd4kpmjbdotmrfikmytnk5srwkbqdfz6gfbmtb4zekja',
-            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaubantlbxghq7z5dltq2trs4tnwkk55yckq4huvqoa6zkr3bopbza',
+            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaahv227kiffm5kzrjy4dzlxlilat3lyhwmpsxfvaeg2qt2ofciehsa',
             'ase': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa7z3oigk4mh4dirxzwusvcldp6s7lhratzpbzbaywsxew62h5eyfq',
             'omm': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatm3ehj6kq72wtiguat6oe6wom32kyyyn7h2ukltphobpq3audmha',
         },
