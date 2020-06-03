@@ -46,7 +46,7 @@ INSTANCE_PARAM = {
     },
     'London': {
         'images': {
-            'git': 'ocid1.image.oc1.uk-london-1.aaaaaaaavyeaeqlhuoer5efyb5dlzdza4ipr2qxuebruzczugzee5u4bsihq',
+            'git': 'ocid1.image.oc1.uk-london-1.aaaaaaaaae2llvxvkadoclu6nzmduqpuz7sfk2m5k75jeykpyvidcgp2o7na',
         },
         'subnet': 'ocid1.subnet.oc1.uk-london-1.aaaaaaaaf7nx3mnvh6yp4dwnpk4otbb6i2k2egvhduokctcf7bnmyumja2aq',
         'availability_domain': 'DpyF:UK-LONDON-1-AD-2',
@@ -54,7 +54,7 @@ INSTANCE_PARAM = {
     },
     'Ashburn': {
         'images': {
-            'git': 'ocid1.image.oc1.iad.aaaaaaaagbae26omobfzbceqx2w77jv7kmz6v2nlrhtu6chyo5y5gms7v4ha',
+            'git': 'ocid1.image.oc1.iad.aaaaaaaaltkndfd2xreu5xfqejtdaeqk7nawzuz5d5z4b6pw6gqrrd7tsemq',
         },
         'subnet': 'ocid1.subnet.oc1.iad.aaaaaaaafou4wxm6lgorngus66t5cwdatkvvqqinzpoz7l4quvd2k5izalsq',
         'availability_domain': 'DpyF:US-ASHBURN-AD-2',
