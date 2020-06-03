@@ -247,7 +247,7 @@ class CloudRunner:
         self._running = True
         timeout_cheker = self.get_timeout_checker()
         print('ready to go')
-        while not next(timeout_cheker):
+        while True:
             if self._running:
                 #self._update_forces()
                 try:
