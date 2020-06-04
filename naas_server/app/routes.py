@@ -2,11 +2,19 @@ import requests
 import datetime
 import uuid
 import json
+import logging
 import oci
 from . import libinstance
 from flask import render_template, url_for, redirect, request, jsonify
 from werkzeug.exceptions import BadRequest, NotFound
 from app import app
+
+START_TIME = datetime.datetime.now()
+logging.basicConfig(
+    filename=f'{START_TIME:%Y%m%d-%H%M%S}.log',
+    level=logging.INFO,
+)
+
 
 STATES_AVAILABLE = (
     oci.core.models.Instance.LIFECYCLE_STATE_PROVISIONING,
@@ -75,6 +83,7 @@ def gitlaunch():
         job_id = response_json['jobid']
         return redirect(url_for('status', job_id=job_id))
     elif response_json['status'] == NOT_ENOUGH_RESSOURCES:
+        logging.warning(f'Not enough ressources for request {data}.')
         return 'No resource available. Try again later.'
 
 
@@ -136,6 +145,7 @@ def local_status(job_id):
 @app.route('/local/v1/instance/<job_id>', methods=['DELETE'])
 def local_terminate(job_id):
     libinstance.terminate_instance(job_id)
+    logging.info(f'Terminate instance {job_id}.')
     return jsonify('')
 
 
@@ -161,10 +171,13 @@ def local_launch():
         job_id = libinstance.launch_compute_instance(
                 filename, region=region, image='git', extra_meta=extra_meta)
     except libinstance.NotEnoughRessources:
+        logging.warning(f'Not enough ressources for request {request.json}.')
         return jsonify({'status': NOT_ENOUGH_RESSOURCES})
-    except:
+    except Exception as err:
+        logging.error(f'Unexpected error with request {request.json}: {err}.')
         return jsonify({'status': 'failed'})
     
+    logging.info(f'Launch {job_id} with request {request.json}.')
     return jsonify({'status': 'success', 'jobid': job_id})
 
 
@@ -195,6 +208,7 @@ def api_terminate(job_id):
         return local_terminate(job_id)
     if region not in REGIONS:
         raise NotFound
+    logging.info(f'Terminate instance {job_id}.')
     target = f"{REGIONS[region]['url']}/local/v1/instance/{job_id}"
     return jsonify(requests.delete(target).json())
 
@@ -204,13 +218,25 @@ def api_launch():
     if not request.is_json:
         raise BadRequest
     region = request.json.get('region', 'Frankfurt')
+    if region not in REGIONS:
+        logging.warning(f'Bad region in request {request.json}.')
+        raise NotFound
     if region == get_current_region():
         return local_launch()
-    if region not in REGIONS:
-        raise NotFound
     response = requests.post(
         f"{REGIONS[region]['url']}/local/v1/instance",
         data=json.dumps(request.json),
         headers={"Content-Type": "application/json"},
     )
-    return jsonify(response.json())
+    response_json = response.json()
+    if response_json['status'] == 'success':
+        job_id = response_json['jobid']
+        logging.info(f'Launch {job_id} with request {request.json}.')
+    elif response_json['status'] == NOT_ENOUGH_RESSOURCES:
+        logging.warning(f'Not enough ressources for request {request.json}.')
+    elif response_json['status'] == 'failed':
+        logging.warning(f'Failed to launch request {request.json}.')
+    else:
+        logging.error(f'Unexpected error with request {request.json}.')
+
+    return jsonify(response_json)
