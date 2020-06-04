@@ -126,7 +126,7 @@ dictionary with the following keys:
 * `available`: `true` if the instance exists, it may be provisionning or running.
 * `narupa_status`: `true` if the Narupa server is ready to take requests.
 * `oci_status`: the status of the instance in the OCI system, values are
-  generally "PROVISIONNING", "RUNNING", or "TERMINATING".
+  generally "PROVISIONING", "RUNNING", or "TERMINATING".
 * `ip`: the IPv4 address of the instance.
 
 ### Terminating an instance
