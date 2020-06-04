@@ -80,6 +80,9 @@ This saves ressources on our side, thank you.
 ## API reference
 
 Besides the web page, the service is accessible programatically via a REST API.
+This section describes the main entry points of the API; additionnal ones are
+described in the "[Advanced API entry points](#advanced-api-entry-points)"
+section.
 
 ### Creating an instance
 
@@ -114,8 +117,41 @@ to launch an instance, then the json payload has the form `{"status": "not
 enough ressources"}`, if any other error occurs, then the json payload has
 the form `{"status": "failed"}`.
 
+### Getting the status of an instance
+
+Send a `GET` request to `/api/v1/instance/<jod_id>` where `<job_id>` is the
+identifier obtained when creating the instance. The response is a json
+dictionary with the following keys:
+
+* `available`: `true` if the instance exists, it may be provisionning or running.
+* `narupa_status`: `true` if the Narupa server is ready to take requests.
+* `oci_status`: the status of the instance in the OCI system, values are
+  generally "PROVISIONNING", "RUNNING", or "TERMINATING".
+* `ip`: the IPv4 address of the instance.
+
+### Terminating an instance
+
+Send a `DELETE` request to `/api/v1/instance/<job_id>` where `<job_id>` is the
+identifier obtained when creating the instance. The response is empty.
+
 ## Adding a simulation
+
+Compute instances download the simulation input files from a
+[repository](https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs).
+They get the name of the imput file from the server, then download it. The
+server gets the list of the available files from the [manifest](https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/blob/master/manifest.txt).
+
+To make a simulation available to the compute instances, make a merge request
+against the repository that adds input file to the directory, and adds its
+name in the manifest.
+
+The input file must follow the format readable by
+[narupa-openmm](https://narupa.readthedocs.io/en/latest/python/narupa.openmm.serializer.html).
 
 ## Advanced API entry points
 
-## Dev guide
+A head node runs in each available OCI region. When a request is addressed to
+`/api/v1/*`, it is redirected to its `/local/v1/*` counterpart in the region of
+interest. Entry points in `/local/v1/*` behave in the same way as those in
+`/api/v1/*` described [above](#api-reference) but will respond with a 400 error
+(Bad request) if the region does not correspond.
