@@ -163,8 +163,8 @@ def local_launch():
 
     region = request.json.get('region', 'Frankfurt')
     extra_meta = {
-        'branch': request.form.get('branch', 'master'),
-        'runner': request.form.get('runner', 'ase'),
+        'branch': request.json.get('branch', 'master'),
+        'runner': request.json.get('runner', 'ase'),
     }
 
     try:
