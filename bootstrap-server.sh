@@ -6,9 +6,16 @@ set -eo pipefail
 
 MINICONDA_PATH="$HOME/miniconda"
 
+if [[ $# -ne 1 ]]; then
+    sudo apt install -y dnsutils
+    server_name=$(dig +short myip.opendns.com @resolver1.opendns.com)
+else
+    server_name=$1
+fi
+
 sudo apt-get update
 sudo apt-get upgrade -y  # We are responsible for keeping the OS up to date
-sudo apt-get install -y git authbind
+sudo apt-get install -y git authbind nginx
 
 # We package Narupa using conda. Here we install conda.
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
@@ -38,3 +45,8 @@ chmod 500 /etc/authbind/byport/80
 # We add the service to be started at boot time
 sudo cp naas_server/naas_server.service /etc/systemd/system
 sudo systemctl enable naas_server.service
+
+# Setup nginx
+sudo sed -e "s/DOMAIN_NAME/${server_name}/g" naas_server/nginx.config | sudo tee /etc/nginx/sites-available/naas_server
+sudo ln -s /etc/nginx/sites-available/naas_server /etc/nginx/sites-enabled
+sudo systemctl enable nginx
