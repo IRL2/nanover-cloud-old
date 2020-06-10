@@ -3,18 +3,23 @@
 		<title>Narupa as a Service</title>
 		{% if available %}
 		<meta http-equiv="refresh" content="5">
+		<script src={{ url_for("static", filename="clipboard.min.js") }}></script>
 		{% endif %}
 	</head>
-	<body>
+	<body onload="new ClipboardJS('.btn');">
 		{% if available %}
-		{% if narupa_status %}
-		<p>You can connect to {{ ip }}.</p>
-		{% else %}
-		<p>The job is in preparation.</p>
-		{% if oci_state == 'RUNNING' %}
-		<p>Waiting for Narupa</p>
-		{% endif %}
-		{% endif %}
+			{% if narupa_status %}
+				<p>You can connect to {{ ip }}.</p>
+				<button class="btn" data-clipboard-text="{{ ip }}">
+				   Copy to clipboard
+				</button>
+			{% else %}
+				<p>The job is in preparation.</p>
+				{% if oci_state == 'RUNNING' %}
+					<p>Waiting for Narupa</p>
+				{% endif %}
+			{% endif %}
+			<p><a href="{{ terminate_url }}">Cancel the instance</a></p>
 		{% else %}
 		<p>The job is unavailable.</p>
 		<p><a href="{{ url_for('index') }}">Back to home page</a></p>

@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<title>Narupa as a Service</title>
+		<link rel="stylesheet" href={{ url_for('static', filename='main.css') }}>
+	</head>
+	<body>
+		<form action="{{ launch_url }}" method="post">
+			<label>Branch</label>
+			<input type="text" name="branch" value="master">
+			<br>
+			<label>Simulation</label>
+			<select name="simulation">
+			{% for simulation in simulation_list %}
+				<option value="{{ simulation }}">{{ simulation }}</option>
+			{% endfor %}
+			</select>
+			<br>
+			<label>Runner</label>
+			<select name="runner">
+				<option value="ase">ASE</option>
+				<option value="omm">OpenMM (experimental)</option>
+			</select>
+			<br>
+			<label>Region</label>
+			<select name="region">
+			{% for region in region_list %}
+				<option value="{{ region }}">{{ region }}</option>
+			{% endfor %}
+			</select>
+			<input type="submit" value="Launch">
+		</form>
+	</body>
+</html>

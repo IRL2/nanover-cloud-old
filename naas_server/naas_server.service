@@ -7,7 +7,7 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/covid-docker/naas_server
 PermissionsStartOnly=true
 ExecStartPre=/bin/bash /home/ubuntu/covid-docker/naas_server/open-ports.sh
-ExecStart=/usr/bin/authbind /home/ubuntu/miniconda/bin/gunicorn -b 0.0.0.0:80 -w 4 naas_server:app
+ExecStart=/usr/bin/authbind /home/ubuntu/miniconda/bin/gunicorn -b unix:naas_server.sock -w 4 naas_server:app
 
 [Install]
 WantedBy=multi-user.target
