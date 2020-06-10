@@ -6,11 +6,40 @@ set -eo pipefail
 
 MINICONDA_PATH="$HOME/miniconda"
 
-if [[ $# -ne 1 ]]; then
-    sudo apt install -y dnsutils
-    server_name=$(dig +short myip.opendns.com @resolver1.opendns.com)
-else
+function show_help() {
+    cat << EOF
+Usage ${0##*/} [-b BRANCH] [SERVER_NAME]
+Bootstrap a head node for narupa as a service. Tell nginx that the server
+is called SERVER_NAME. If the name is not provided, the public IP is used
+instead. Naming the server is required if one want to use https.
+
+    -b BRANCH  use a specific branch when cloning the covid-docker repository
+EOF
+}
+
+
+OPTIND=1 
+
+branch='master'
+server_name=$(wget -qO - icanhazip.com)
+
+while getopts "hb:" opt; do
+    case "$opt" in
+        h)
+            show_help
+            exit 0
+            ;;
+        b)
+            branch=$OPTARG
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+[ "${1:-}" = "--" ] && shift
+
+if [[ $# -gt 0 ]]; then
     server_name=$1
+    shift
 fi
 
 sudo apt-get update
@@ -26,7 +55,7 @@ source $HOME/.bashrc
 conda update -y -n base -c defaults conda
 
 # Get the code
-git clone https://gitlab.com/intangiblerealities/covid-docker.git
+git clone https://gitlab.com/intangiblerealities/covid-docker.git --branch $branch
 cd covid-docker
 
 # We need narupa-core to poke servers
