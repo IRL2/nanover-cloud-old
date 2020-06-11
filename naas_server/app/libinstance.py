@@ -78,14 +78,13 @@ def make_credentials():
 
 
 def launch_compute_instance(
-        filename='helen.xml',
         region='Frankfurt',
         image='git',
         extra_meta={}
     ):
     with open(os.path.expanduser('~/.ssh/id_rsa.pub')) as infile:
         ssh_key = infile.read()
-    metadata = dict(filename=filename, ssh_authorized_keys=ssh_key, **extra_meta)
+    metadata = dict(ssh_authorized_keys=ssh_key, **extra_meta)
     compartment_id = OCID['compartment']
 
     compute_client = oci.core.ComputeClient(**make_credentials())

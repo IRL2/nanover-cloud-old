@@ -3,7 +3,6 @@
 INSTANCE_LIFETIME='30m'
 NARUPA_BRANCH='master'
 API_URL='http://169.254.169.254/opc/v1/instance'
-REPO_URL='https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/master'
 
 function get_metadata() {
     curl "${API_URL}/metadata/$1"
@@ -22,12 +21,6 @@ sudo iptables -I INPUT 1 -p tcp --dport 38801 -j ACCEPT
 sudo iptables -I OUTPUT 1 -p tcp --dport 38801 -j ACCEPT
 sudo bash -c "iptables-save > /etc/iptables.rules"
 
-# Download the input file
-filename=$(get_metadata filename)
-#filename='40-ALA.narupa2.xml'
-echo "Trying to get ${filename}"
-#$HOME/bin/oci --auth instance_principal os object get --namespace uobvr --bucket-name naas-bucket --name $filename --file $HOME/simulation.xml
-wget -O $HOME/simulation.xml "${REPO_URL}/${filename}"
 
 # Get the lastest narupa
 export PATH=$HOME/miniconda/bin:$PATH
@@ -42,12 +35,24 @@ cd $HOME/narupa-protocol
 cd $HOME
 
 # Actually run the narupa server
+PYTHON=$HOME/miniconda/bin/python
 runner_request=$(get_metadata runner)
-runner="$HOME/miniconda/bin/python $HOME/covid-docker/run_ase.py"
-if [[ ${runner_request} == 'omm' ]]; then
-	runner="$HOME/miniconda/bin/python $HOME/covid-docker/run_omm.py"
-fi
-$runner $HOME/simulation.xml
+case "${runner_request}" in
+    'ase')
+        echo "Runner is ase"
+        echo "Getting simulation"
+        filename=$(get_metadata simulation)
+        wget -O $HOME/simulation.xml "${filename}"
+        $PYTHON $HOME/covid-docker/run_ase.py $HOME/simulation.xml
+        ;;
+    'omm')
+        echo "Runner is omm"
+        echo "Getting simulation"
+        filename=$(get_metadata simulation)
+        wget -O $HOME/simulation.xml "${filename}"
+        $PYTHON $HOME/covid-docker/run_omm.py $HOME/simulation.xml
+        ;;
+esac
 
 # Terminate the instance if the script crashed or timed out
 terminate

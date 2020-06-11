@@ -151,25 +151,20 @@ def local_terminate(job_id):
 
 @app.route('/local/v1/instance', methods=['POST'])
 def local_launch():
-    if not request.is_json:
-        raise BadRequest
-    try:
-        filename=request.json['simulation']
-    except:
-        raise BadRequest
     if ('region' in request.json
             and request.json['region'] != get_current_region()):
         raise BadRequest
 
     region = request.json.get('region', 'Frankfurt')
     extra_meta = {
+        'filename': request.json['simulation'],
         'branch': request.json.get('branch', 'master'),
         'runner': request.json.get('runner', 'ase'),
     }
 
     try:
         job_id = libinstance.launch_compute_instance(
-                filename, region=region, image='git', extra_meta=extra_meta)
+            region=region, image='git', extra_meta=extra_meta)
     except libinstance.NotEnoughRessources:
         logging.warning(f'Not enough ressources for request {request.json}.')
         return jsonify({'status': NOT_ENOUGH_RESSOURCES})
