@@ -21,7 +21,8 @@ STATES_AVAILABLE = (
     oci.core.models.Instance.LIFECYCLE_STATE_RUNNING,
 )
 DEFAULT_FILENAME = 'helen.xml'
-MANIFEST = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/master/manifest.txt'
+REPO_URL = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/'
+MANIFEST = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/manifest.txt'
 REGIONS = {
     'Frankfurt': {'url': 'https://staging.narupa.xyz', 'string': 'eu-frankfurt-1'},
     'London': {'url': 'http://152.67.129.75', 'string': 'uk-london-1'},
@@ -70,7 +71,12 @@ def launch(filename=None, image='default'):
 
 @app.route('/gitlaunch', methods=['POST'])
 def gitlaunch():
-    data = json.dumps(request.form)
+    meta = dict(**request.form)
+    simulation = request.form['simulation']
+    simu_data = requests.get(REPO_URL + simulation).json()
+    meta['simulation'] = simu_data['simulation']
+    meta['runner'] = simu_data['runner']
+    data = json.dumps(meta)
     response = requests.post(
         REGIONS[BASE_REGION]['url']
         + url_for('api_launch'),
@@ -157,7 +163,7 @@ def local_launch():
 
     region = request.json.get('region', 'Frankfurt')
     extra_meta = {
-        'filename': request.json['simulation'],
+        'simulation': request.json['simulation'],
         'branch': request.json.get('branch', 'master'),
         'runner': request.json.get('runner', 'ase'),
     }
