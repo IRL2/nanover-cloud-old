@@ -74,8 +74,7 @@ def gitlaunch():
     meta = dict(**request.form)
     simulation = request.form['simulation']
     simu_data = requests.get(REPO_URL + simulation).json()
-    meta['simulation'] = simu_data['simulation']
-    meta['runner'] = simu_data['runner']
+    meta.update(simu_data)
     data = json.dumps(meta)
     response = requests.post(
         REGIONS[BASE_REGION]['url']
