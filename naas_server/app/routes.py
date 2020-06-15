@@ -170,11 +170,6 @@ def local_launch():
 
     region = request.json.get('region', 'Frankfurt')
     extra_meta = dict(**request.json)
-    #extra_meta = {
-    #    'simulation': request.json['simulation'],
-    #    'branch': request.json.get('branch', 'master'),
-    #    'runner': request.json.get('runner', 'ase'),
-    #}
 
     try:
         job_id = libinstance.launch_compute_instance(
