@@ -52,6 +52,18 @@ case "${runner_request}" in
         wget -O $HOME/simulation.xml "${filename}"
         $PYTHON $HOME/covid-docker/run_omm.py $HOME/simulation.xml
         ;;
+    'trajectory')
+        echo "Runner is trajectory"
+        echo "Getting topology"
+        filename=$(get_metadata topology)
+        topology="$HOME/$(basename $filename)"
+        wget -O $topology "${filename}"
+        echo "Getting trajectory"
+        filename=$(get_metadata trajectory)
+        trajectory="$HOME/$(basename $filename)"
+        wget -O $trajectory "${filename}"
+        $PYTHON $HOME/covid-docker/run_traj.py $topology $trajectory
+        ;;
 esac
 
 # Terminate the instance if the script crashed or timed out
