@@ -24,7 +24,7 @@ DEFAULT_FILENAME = 'helen.xml'
 REPO_URL = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/'
 MANIFEST = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/manifest.txt'
 REGIONS = {
-    'Frankfurt': {'url': 'https://staging.narupa.xyz', 'string': 'eu-frankfurt-1'},
+    'Frankfurt': {'url': 'https://dev.narupa.xyz', 'string': 'eu-frankfurt-1'},
     'London': {'url': 'http://152.67.129.75', 'string': 'uk-london-1'},
     'Ashburn': {'url': 'http://129.213.120.237', 'string': 'iad'},
 }
@@ -75,7 +75,13 @@ def gitlaunch():
     simulation = request.form['simulation']
     simu_data = requests.get(REPO_URL + simulation).json()
     meta.update(simu_data)
-    meta['simulation'] = REPO_URL + simu_data['simulation']
+    # TODO: Do that more cleanly
+    if 'simulation' in simu_data:
+        meta['simulation'] = REPO_URL + simu_data['simulation']
+    if 'topology' in simu_data:
+        meta['topology'] = REPO_URL + simu_data['topology']
+    if 'trajectory' in simu_data:
+        meta['trajectory'] = REPO_URL + simu_data['trajectory']
     data = json.dumps(meta)
     response = requests.post(
         REGIONS[BASE_REGION]['url']
@@ -133,7 +139,7 @@ def local_status(job_id):
     narupa_status = False
     oci_state = None
     try:
-        oci_state, ip, narupa_status = libinstance.check_instance(job_id)
+        oci_state, ip, narupa_status, metadata = libinstance.check_instance(job_id)
     except Exception as err:
         print(err)
         available = False
@@ -144,6 +150,7 @@ def local_status(job_id):
         'narupa_status': narupa_status,
         'available': available,
         'oci_state': oci_state,
+        'metadata': metadata,
     }
     return jsonify(variables)
 
@@ -162,11 +169,12 @@ def local_launch():
         raise BadRequest
 
     region = request.json.get('region', 'Frankfurt')
-    extra_meta = {
-        'simulation': request.json['simulation'],
-        'branch': request.json.get('branch', 'master'),
-        'runner': request.json.get('runner', 'ase'),
-    }
+    extra_meta = dict(**request.json)
+    #extra_meta = {
+    #    'simulation': request.json['simulation'],
+    #    'branch': request.json.get('branch', 'master'),
+    #    'runner': request.json.get('runner', 'ase'),
+    #}
 
     try:
         job_id = libinstance.launch_compute_instance(
