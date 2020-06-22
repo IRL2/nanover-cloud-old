@@ -1,6 +1,7 @@
 import requests
 import datetime
 import json
+import os
 import logging
 import oci
 from . import libinstance, zoom, classes, utils
@@ -28,7 +29,7 @@ scheduler.init_app(app)
 scheduler.api_enabled = True
 scheduler.start()
 
-firebase_admin.initialize_app(firebase_credentials.Certificate('narupa-web-firebase-adminsdk-iaum3-25902892db.json'))
+firebase_admin.initialize_app(firebase_credentials.Certificate(os.environ.get('FIREBASE_CREDENTIALS_PATH')))
 db = firestore.client()
 
 STATES_AVAILABLE = (
@@ -274,7 +275,7 @@ def oci_warm_out():
                 session.oci_instance.ip = oci_ip
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
-            print('Unable to check session: {}, with error: {}'.format(doc.id, e))
+            logging.warning('Unable to check session: {}, with error: {}'.format(doc.id, e))
 
     return no_content()
 
@@ -293,7 +294,7 @@ def oci_warm_up():
                 session.oci_instance.status = 'WARMING'
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
-            print('Unable to warm up session: {}, with error: {}'.format(doc.id, e))
+            logging.warning('Unable to warm up session: {}, with error: {}'.format(doc.id, e))
     
     return no_content()
 
