@@ -1,10 +1,12 @@
 import requests
+import logging
 import base64
+import os
 from . import classes, utils
 
-REDIRECT_URI = 'http://localhost/account'
-CLIENT_SECRET = 'vDL54VYjWVUkh2Qemn5EH2cqWnxZWQW8'
-CLIENT_ID = 'sJQ6vA2iTNqlIQioeyb7YA'
+REDIRECT_URI = 'https://app.narupa.xyz/account'
+CLIENT_SECRET = os.environ.get('ZOOM_CLIENT_SECRET')
+CLIENT_ID = os.environ.get('ZOOM_CLIENT_ID')
 
 
 def init_zoom_tokens(zoom_authorization_code):
@@ -12,7 +14,7 @@ def init_zoom_tokens(zoom_authorization_code):
     url = 'https://zoom.us/oauth/token?grant_type=authorization_code&code={}&redirect_uri={}'.format(zoom_authorization_code, REDIRECT_URI)
     json = requests.post(url, headers=headers).json()
     if 'error' in json:
-        print(json)
+        logging.warning(json)
         return None
     json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in'])
     return classes.UserZoom(json)
@@ -45,7 +47,7 @@ def refresh_zoom_tokens(user):
     url = 'https://zoom.us/oauth/token?grant_type=refresh_token&refresh_token={}'.format(refresh_token)
     json = requests.post(url, headers=headers).json()
     if 'error' in json:
-        print(json)
+        logging.warning(json)
         return None
     json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in'])
     return classes.UserZoom(json)
@@ -73,14 +75,14 @@ def upsert_meeting(user, session, update=False):
         url += '/meetings/{}'.format(session.zoom_meeting.id)
         r = requests.patch(url, headers=headers, json=data)
         if r.status_code != 204:
-            print(r.status_code)
+            logging.warning('Could not updated Zoom meeting: ' + str(r.status_code))
             return None
         return classes.ZoomMeeting(session.zoom_meeting.to_dict())
     else:
         url += '/users/me/meetings'
         json = requests.post(url, headers=headers, json=data).json()
         if 'error' in json:
-            print(json)
+            logging.warning(json)
             return None
         return classes.ZoomMeeting(json)
 
