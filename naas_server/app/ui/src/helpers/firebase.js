@@ -4,14 +4,16 @@ import "firebase/firestore";
 import "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDLhkkakJyfkc-1-ZkMvMRZ3VYAtiuaxZQ",
-  authDomain: "narupa-web.firebaseapp.com",
-  databaseURL: "https://narupa-web.firebaseio.com",
-  projectId: "narupa-web",
-  storageBucket: "narupa-web.appspot.com",
-  messagingSenderId: "877663772683",
-  appId: "1:877663772683:web:2a3b60a776614ea05aa70e"
+	apiKey: "AIzaSyDfcNd-uiKYT75yJnYgz4ul7Y_JOWuRkEo",
+	authDomain: "narupa-as-a-service.firebaseapp.com",
+	databaseURL: "https://narupa-as-a-service.firebaseio.com",
+	projectId: "narupa-as-a-service",
+	storageBucket: "narupa-as-a-service.appspot.com",
+	messagingSenderId: "765297605767",
+	appId: "1:765297605767:web:096339fec51d165b054c22",
+	measurementId: "G-WGGPGJ7HDF"
 };
+
 
 firebase.initializeApp(firebaseConfig);
 
