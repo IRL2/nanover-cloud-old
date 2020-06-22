@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 User=ubuntu
+EnvironmentFile=/home/ubuntu/environment
 WorkingDirectory=/home/ubuntu/covid-docker/naas_server
 PermissionsStartOnly=true
 ExecStartPre=/bin/bash /home/ubuntu/covid-docker/naas_server/open-ports.sh

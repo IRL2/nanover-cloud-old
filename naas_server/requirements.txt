@@ -2,6 +2,7 @@ werkzeug
 requests
 flask
 flask-cors
+Flask_APScheduler
 gunicorn
 python-dotenv
 oci

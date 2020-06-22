@@ -1,8 +1,9 @@
+import logging
 import requests
 import base64
 from . import classes, utils
 
-REDIRECT_URI = 'http://localhost/account'
+REDIRECT_URI = 'https://app.narupa.xyz/account'
 CLIENT_SECRET = 'vDL54VYjWVUkh2Qemn5EH2cqWnxZWQW8'
 CLIENT_ID = 'sJQ6vA2iTNqlIQioeyb7YA'
 
@@ -12,7 +13,7 @@ def init_zoom_tokens(zoom_authorization_code):
     url = 'https://zoom.us/oauth/token?grant_type=authorization_code&code={}&redirect_uri={}'.format(zoom_authorization_code, REDIRECT_URI)
     json = requests.post(url, headers=headers).json()
     if 'error' in json:
-        print(json)
+        logging.error(json)
         return None
     json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in'])
     return classes.UserZoom(json)
