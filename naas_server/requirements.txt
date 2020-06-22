@@ -6,3 +6,4 @@ gunicorn
 python-dotenv
 oci
 firebase-admin
+Flask-APScheduler

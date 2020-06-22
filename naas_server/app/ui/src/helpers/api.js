@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { fireauth } from './firebase';
 
-const BASE_API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://prod.web'
+const BASE_API_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://app.narupa.xyz/'
 
 export async function createUser(firebaseUser, displayName) {
   const { email, uid } = firebaseUser;
