@@ -38,14 +38,14 @@ const Account = () => {
   const zoomAuthorizationCode = useQuery().get('code');
   const [loading, setLoading] = useState(true);
   const [me, setMe] = useState(null);
-  const zoomRedirectUri = encodeURIComponent(`${window.location.protocol}//${window.location.hostname}/account`);
+  const zoomRedirectUri = `${window.location.protocol}//${window.location.hostname}/account`;
 
   useEffect(() => {
     (async () => {
       try {
         if (zoomAuthorizationCode) {
           try {
-            await updateMeZoom(zoomAuthorizationCode);
+            await updateMeZoom(zoomAuthorizationCode, zoomRedirectUri);
           } catch (e) {
             console.log(e);
           }
@@ -79,7 +79,7 @@ const Account = () => {
             variant="contained"
             color="primary"
             component="a"
-            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=sJQ6vA2iTNqlIQioeyb7YA&redirect_uri=${zoomRedirectUri}`}
+            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=sJQ6vA2iTNqlIQioeyb7YA&redirect_uri=${encodeURIComponent(zoomRedirectUri)}`}
             className={classes.connectToZoom}
             >Connect to Zoom</Button>
           }</Typography>
