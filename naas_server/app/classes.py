@@ -22,9 +22,9 @@ class Session:
         self.record = d.get('record', False)
         self.location = d.get('location', None)
         self.branch = d.get('branch', None)
-        self.oci_instance = OciInstance(d['oci_instance']) if 'oci_instance' in d else OciInstance({'status': 'PENDING'})
-        self.simulation = Simulation(d['simulation']) if 'simulation' in d else None
-        self.zoom_meeting = ZoomMeeting(d['zoom_meeting']) if 'zoom_meeting' in d else None
+        self.oci_instance = OciInstance(d['oci_instance']) if d.get('oci_instance', None) is not None else OciInstance({'status': 'PENDING'})
+        self.simulation = Simulation(d['simulation']) if d.get('simulation', None) is not None else None
+        self.zoom_meeting = ZoomMeeting(d['zoom_meeting']) if d.get('zoom_meeting', None) is not None else None
 
     def to_dict(self):
         return utils.to_dict(self)
@@ -45,7 +45,7 @@ class User:
         self.can_manage_simulations = d.get('can_manage_simulations', None)
         self.can_view_stats = d.get('can_view_stats', None)
         self.firebase_uid = d.get('firebase_uid', None)
-        self.zoom = UserZoom(d['zoom']) if 'zoom' in d else None
+        self.zoom = UserZoom(d['zoom']) if d.get('zoom', None) is not None else None
 
     def to_dict(self):
         return utils.to_dict(self)
