@@ -14,8 +14,8 @@ export async function getMe() {
   return _get(`${BASE_API_URL}/api/users/me`);
 }
 
-export async function updateMeZoom(zoom_authorization_code) {
-  return _put(`${BASE_API_URL}/api/users/me/zoom`, { zoom_authorization_code });
+export async function updateMeZoom(zoom_authorization_code, zoom_redirect_uri) {
+  return _put(`${BASE_API_URL}/api/users/me/zoom`, { zoom_authorization_code, zoom_redirect_uri });
 }
 
 export async function getSessions() {

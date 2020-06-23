@@ -5,14 +5,13 @@ import base64
 import os
 from . import classes, utils
 
-REDIRECT_URI = 'https://app.narupa.xyz/account'
 CLIENT_SECRET = os.environ.get('ZOOM_CLIENT_SECRET')
 CLIENT_ID = os.environ.get('ZOOM_CLIENT_ID')
 
 
-def init_zoom_tokens(zoom_authorization_code):
+def init_zoom_tokens(zoom_authorization_code, zoom_redirect_uri):
     headers = {'Authorization': get_service_auth_header()}
-    url = 'https://zoom.us/oauth/token?grant_type=authorization_code&code={}&redirect_uri={}'.format(zoom_authorization_code, REDIRECT_URI)
+    url = 'https://zoom.us/oauth/token?grant_type=authorization_code&code={}&redirect_uri={}'.format(zoom_authorization_code, zoom_redirect_uri)
     json = requests.post(url, headers=headers).json()
     if 'error' in json:
         logging.warning(json)

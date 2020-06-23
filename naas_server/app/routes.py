@@ -322,7 +322,8 @@ def put_users_me_zoom():
         raise Unauthorized
 
     zoom_authorization_code = request.json['zoom_authorization_code']
-    user.zoom = zoom.init_zoom_tokens(zoom_authorization_code)
+    zoom_redirect_uri = request.json['zoom_redirect_uri']
+    user.zoom = zoom.init_zoom_tokens(zoom_authorization_code, zoom_redirect_uri)
     db_document('users', user.id).set(user.to_dict())
     return no_content()
 
