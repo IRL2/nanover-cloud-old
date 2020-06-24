@@ -91,7 +91,7 @@ const Main = ({component: Component, props, breadcrumbs}) => {
       </List>
       <Divider />
       <List>
-        <ListItem button component="a" href="https://gitlab.com" target="_blank" rel="noreferrer noopener">
+        <ListItem button component="a" href="https://narupa.readthedocs.io/en/latest/" target="_blank" rel="noreferrer noopener">
           <ListItemIcon><HelpIcon /></ListItemIcon>
           <ListItemText primary="Help" />
         </ListItem>

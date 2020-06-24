@@ -4,7 +4,7 @@ import json
 import os
 import logging
 import oci
-from . import libinstance, zoom, classes, utils
+from . import libinstance, zoom, classes, utils, gitlab
 from flask import render_template, url_for, redirect, request, jsonify
 from flask_cors import CORS
 from flask_apscheduler import APScheduler
@@ -25,9 +25,10 @@ CORS(app, resources={r'/api/*': {"origins": ["http://localhost:3000", "http://lo
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.api_enabled = True
-scheduler.start()
+if os.environ.get('NARUPA_SCHEDULER', False):
+    scheduler.init_app(app)
+    scheduler.api_enabled = True
+    scheduler.start()
 
 firebase_admin.initialize_app(firebase_credentials.Certificate(os.environ.get('FIREBASE_CREDENTIALS_PATH')))
 db = firestore.client()
@@ -262,17 +263,20 @@ def api_launch():
     return jsonify(response_json)
 
 
-# @scheduler.task('cron', id='oci_warm_up_check', minute='*')
+@scheduler.task('cron', id='warm_up_check', minute='*')
 @app.route('/api/warm-up-check')
-def oci_warm_out():
-    docs = db.collection('sessions').where('oci_instance.status', '==', 'WARMING').stream()
+def warm_up_check():
+    docs = db.collection('sessions').where('instance.status', '==', 'WARMING').stream()
     for doc in docs:
         try:
             session = classes.Session(doc)
-            oci_state, oci_ip = libinstance.check_instance(session.oci_instance.job_id)
-            if oci_state in STATES_AVAILABLE:
-                session.oci_instance.status = 'LAUNCHED'
-                session.oci_instance.ip = oci_ip
+
+            target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
+            response_json = requests.get(target).json()
+            state = response_json['status']
+            if state in STATES_AVAILABLE:
+                session.instance.status = 'LAUNCHED'
+                session.instance.ip = response_json['ip']
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
             logging.warning('Unable to check session: {}, with error: {}'.format(doc.id, e))
@@ -280,18 +284,36 @@ def oci_warm_out():
     return no_content()
 
 
-# @scheduler.task('cron', id='oci_warm_up', minute='*')
+@scheduler.task('cron', id='warm_up', minute='*')
 @app.route('/api/warm-up')
-def oci_warm_up():
-    docs = db.collection('sessions').where('oci_instance.status', '==', 'PENDING').stream()
+def warm_up():
+    docs = db.collection('sessions').where('instance.status', '==', 'PENDING').stream()
     for doc in docs:
         try:
             session = classes.Session(doc)
             if session.has_warm_up_at_passed():
-                # TODO: meta = session.create_meta()
-                oci_job_id = libinstance.launch_compute_instance(session.location, session.simulation.config_url)
-                session.oci_instance.job_id = oci_job_id
-                session.oci_instance.status = 'WARMING'
+                meta = {'branch': session.branch}
+                runner = session.simulation.runner
+                if runner == 'ase' or runner == 'omm':
+                    meta['simulation'] = session.simulation.config_url
+                if runner == 'static':
+                    meta['topology'] = session.simulation.topology_url
+                if runner == 'trajectory':
+                    meta['topology'] = session.simulation.topology_url
+                    meta['trajectory'] = session.simulation.trajectory_url
+
+                response_json = requests.post(
+                    f"{REGIONS[session.location]['url']}/local/v1/instance",
+                    data=json.dumps(meta),
+                    headers={"Content-Type": "application/json"},
+                ).json()
+
+                if response_json['status'] == 'success':
+                    session.instance.status = 'WARMING'
+                    session.instance.id = response_json['jobid']
+                else:
+                    session.instance.status = 'FAILED'
+
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
             logging.warning('Unable to warm up session: {}, with error: {}'.format(doc.id, e))
@@ -364,6 +386,12 @@ def create_session():
     body = request.json
     session = classes.Session(utils.pick(body, classes.Session.public_fields))
     session.user_id = user.id
+
+    if utils.difference_in_minutes(session.start_at, session.end_at) > 120:
+        raise BadRequest('Session is longer than 2 hour limit')
+
+    if session.branch not in gitlab.list_branches('19161776'):
+        raise BadRequest('Invalid branch')
     
     simulation = db_document('simulations', body['simulation']['id']).get()
     session.simulation = classes.Simulation(simulation)
@@ -371,7 +399,7 @@ def create_session():
     session.warm_up_at = utils.generate_warm_up_at(session)
     
     refresh_zoom_tokens(user)
-    if user.has_zoom():
+    if session.create_conference and user.has_zoom():
         zoom_meeting = zoom.create_meeting(user, session)
         if zoom_meeting:
             session.zoom_meeting = zoom_meeting
@@ -397,9 +425,10 @@ def update_session(session_id):
     session = classes.Session(doc.get())
 
     session.warm_up_at = utils.generate_warm_up_at(session)
+    doc.set(session.to_dict())
 
     refresh_zoom_tokens(user)
-    if user.has_zoom():
+    if session.zoom_meeting and user.has_zoom():
         zoom.update_meeting(user, session)
 
     return no_content()
@@ -419,31 +448,62 @@ def delete_session(session_id):
     doc.delete()
 
     refresh_zoom_tokens(user)
-    if user.has_zoom():
+    if session.zoom_meeting and user.has_zoom():
         zoom.delete_meeting(user, session)
+
+    return no_content()
+
+
+@app.route('/api/sessions/<session_id>/instance', methods=['DELETE'])
+def delete_session_instance(session_id):
+    user = get_user_from_request(request)
+    if user is None:
+        raise Unauthorized
+
+    doc = db_document('sessions', session_id)
+    session = classes.Session(doc.get())
+    if session.user_id != user.id:
+        raise Unauthorized
+
+    target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
+    requests.delete(target)
+    session.instance.status = 'STOPPED'
+    session.instance.ip = None
+
+    doc.set(session.to_dict())
 
     return no_content()
 
 
 @app.route('/api/simulations')
 def get_simulations():
-    if get_user_from_request(request) is None:
+    user = get_user_from_request(request)
+    if user is None:
         raise Unauthorized
     
     simulations = []
     docs = db.collection('simulations').order_by('name', direction=firestore.Query.ASCENDING).stream()
     for doc in docs:
-        simulations.append(classes.Simulation(doc).to_dict())
+        simulation = classes.Simulation(doc)
+        if simulation.public or simulation.user_id == user.id:
+            simulations.append(simulation.to_dict())
+
     return {'items': simulations}
 
 
 @app.route('/api/simulations/<simulation_id>')
 def get_simulation(simulation_id):
-    if get_user_from_request(request) is None:
+    user = get_user_from_request(request)
+    if user is None:
         raise Unauthorized
 
     doc = db_document('simulations', simulation_id).get()
-    return classes.Simulation(doc).to_dict()
+    simulation = classes.Simulation(doc)
+
+    if not simulation.public and simulation.user_id != user.id:
+        raise Unauthorized
+
+    return simulation.to_dict()
 
 
 @app.route('/api/simulations', methods=['POST'])
@@ -486,10 +546,10 @@ def get_stats():
         raise Unauthorized
 
     total_minutes = 0
-    docs = db.collection('sessions').where('oci_instance.status', '==', 'LAUNCHED').stream()
+    docs = db.collection('sessions').where('instance.status', '==', 'LAUNCHED').stream()
     for doc in docs:
         session = classes.Session(doc)
-        total_minutes += utils.datetime_difference_in_minutes(session.start_at, session.end_at)
+        total_minutes += utils.difference_in_minutes(session.start_at, session.end_at)
 
     return {'total_minutes': total_minutes}
 

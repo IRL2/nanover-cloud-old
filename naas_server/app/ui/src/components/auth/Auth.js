@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom'
+import GoogleButton from 'react-google-button'
 import { makeStyles } from '@material-ui/core/styles';
 import { login, loginWithGoogle, register } from "../../helpers/auth";
 import { createUser } from "../../helpers/api";
@@ -52,6 +53,11 @@ const useStyles = makeStyles((theme) => ({
   link: {
     marginLeft: 4,
     color: '#ff6600'
+  },
+  googleButtonContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: 32
   }
 }));
 
@@ -156,15 +162,15 @@ const Auth = ({ registering = false }) => {
           </Button>
         </form>
         <p className={classes.or}>or</p>
-        <Button 
-          type="submit"
-          color="primary"
-          variant="contained"
-          disabled={submitting}
-          onClick={onSubmitGoogle}
-        >
-          {registering ? 'Register with Google' : 'Login with Google'}
-        </Button>
+          <div className={classes.googleButtonContainer}>
+          <GoogleButton 
+            type="light"
+            disabled={submitting}
+            onClick={onSubmitGoogle}
+            className={classes.googleButton}
+            label={registering ? 'Register with Google' : 'Login with Google'}
+          />
+        </div>
         <div className={classes.footer}>
           {registering && 
           <>

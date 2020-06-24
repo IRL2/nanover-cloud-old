@@ -57,7 +57,7 @@ const Account = () => {
       }
       setLoading(false);
     })();
-  }, []);
+  }, [zoomAuthorizationCode, zoomRedirectUri]);
 
   return (
     loading || !me ?

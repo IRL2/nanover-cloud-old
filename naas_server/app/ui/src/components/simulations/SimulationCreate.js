@@ -8,6 +8,8 @@ import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles(() => ({
@@ -24,13 +26,19 @@ const useStyles = makeStyles(() => ({
   formSelect: {
     paddingTop: 16
   },
-  chooseFileButton: {
-    minWidth: 180,
+  fileInput: {
+    display: 'flex',
+    alignItems: 'center',
     marginBottom: 16
   },
-  chooseFileLink: {
-    color: '#ff6600',
-    marginLeft: 16
+  chooseFileButton: {
+    minWidth: 180,
+  },
+  chooseFileOr: {
+    padding: '0 24px'
+  },
+  chooseFileUrl: {
+    flexGrow: 1
   },
   image: {
     maxWidth: 400,
@@ -43,11 +51,11 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const FileInput = ({ id, text, url, accept, onChange, uploadProgress }) => {
+const SimulationFileInput = ({ id, text, url, accept, onChange, uploadProgress, allowManualUrl }) => {
   const classes = useStyles();
 
   return (
-    <div>
+    <div className={classes.fileInput}>
       <input
         accept={accept}
         style={{ display: 'none' }}
@@ -65,15 +73,19 @@ const FileInput = ({ id, text, url, accept, onChange, uploadProgress }) => {
           {uploadProgress ? `${uploadProgress}%` : `${text}`}
         </Button>
       </label>
-      {url && 
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={classes.chooseFileLink}
-        >
-          Download
-        </a>}
+      {allowManualUrl &&
+      <>
+        <div className={classes.chooseFileOr}>or enter URL</div>
+        <TextField
+            variant="outlined"
+            label="URL"
+            defaultValue={url}
+            key={url}
+            className={classes.chooseFileUrl}
+            onChange={onChange}
+          />
+      </>
+      }
     </div>
   )
 }
@@ -84,7 +96,8 @@ const SimulationCreate = () => {
   const { simulationId } = useParams();
   const history = useHistory();
   const [simulation, setSimulation] = useState({
-    runner: ''
+    runner: '',
+    public: false
   });
   const [submitting, setSubmitting] = useState(false);
   const [uploadImageProgress, setUploadImageProgress] = useState(null);
@@ -106,28 +119,32 @@ const SimulationCreate = () => {
         setLoading(false);
       };
     })();
-  }, []);
+  }, [simulationId]);
 
   const random_six_digits = () => {
     return Math.floor(100000 + Math.random() * 900000);
   }
 
-  const uploadFile = (e, onUpdateProgress, onDownloadUrl) => {
-    onUpdateProgress(0);
-    const f = e.target.files[0];
-    const uploadRef = firestorage().ref(`/simulations/${random_six_digits()}_${f.name}`);
-    uploadRef.put(f).on('state_changed', snapshot => {
-      const progress = Math.round(100 * snapshot.bytesTransferred / snapshot.totalBytes);
-      onUpdateProgress(progress);
-    }, e => {
-      console.log(e);
-      onUpdateProgress(null);
-    }, () => {
-      uploadRef.getDownloadURL().then(url => {
-        onDownloadUrl(url)
+  const updateSimulationFile = (e, onUpdateProgress, onDownloadUrl) => {
+    if (!e.target.files) {
+      onDownloadUrl(e.currentTarget.value);
+    } else {
+      onUpdateProgress(0);
+      const f = e.target.files[0];
+      const uploadRef = firestorage().ref(`/simulations/${random_six_digits()}_${f.name}`);
+      uploadRef.put(f).on('state_changed', snapshot => {
+        const progress = Math.round(100 * snapshot.bytesTransferred / snapshot.totalBytes);
+        onUpdateProgress(progress);
+      }, e => {
+        console.log(e);
         onUpdateProgress(null);
+      }, () => {
+        uploadRef.getDownloadURL().then(url => {
+          onDownloadUrl(url);
+          onUpdateProgress(null);
+        });
       });
-    });
+    }
   }
 
   const onChangeDescription = e => {
@@ -151,23 +168,27 @@ const SimulationCreate = () => {
   }
 
   const onChangeImage = e => {
-    uploadFile(e, setUploadImageProgress, url => simulation.image_url = url);
+    updateSimulationFile(e, setUploadImageProgress, url => setSimulation({...simulation, image_url: url}));
   }
 
   const onChangeConfig = e => {
-    uploadFile(e, setUploadConfigProgress, url => simulation.config_url = url);
+    updateSimulationFile(e, setUploadConfigProgress, url => simulation.config_url = url);
   }
 
   const onChangeTopology = e => {
-    uploadFile(e, setUploadTopologyProgress, url => simulation.topology_url = url);
+    updateSimulationFile(e, setUploadTopologyProgress, url => setSimulation({...simulation, topology_url: url}));
   }
 
   const onChangeTrajectory = e => {
-    uploadFile(e, setUploadTrajectoryProgress, url => simulation.trajectory_url = url);
+    updateSimulationFile(e, setUploadTrajectoryProgress, url => setSimulation({...simulation, trajectory_url: url}));
   }
 
   const onChangeRendering = e => {
-    uploadFile(e, setUploadRenderingProgress, url => simulation.rendering_url = url);
+    updateSimulationFile(e, setUploadRenderingProgress, url => setSimulation({...simulation, rendering_url: url}));
+  }
+
+  const onChangePublic = e => {
+    setSimulation({...simulation, public: e.currentTarget.checked});
   }
 
   const onSubmit = async e => {
@@ -223,6 +244,18 @@ const SimulationCreate = () => {
           defaultValue={simulation.citation}
           onChange={onChangeCitation}
           className={classes.formControl}
+        />        
+        <FormControlLabel 
+          variant="outlined" 
+          className={classes.formControl}
+          control={
+            <Checkbox
+              defaultChecked={simulation.public}
+              onChange={onChangePublic}
+              color="primary"
+            />
+          }
+          label="Public"
         />
         {simulation.image_url && 
           <img 
@@ -231,7 +264,7 @@ const SimulationCreate = () => {
             alt={simulation.name}
           />
         }
-        <FileInput 
+        <SimulationFileInput 
           id="image-input"
           text="Choose thumbnail"
           accept="image/*"
@@ -250,47 +283,51 @@ const SimulationCreate = () => {
             <option value='ase'>ASE</option>
             <option value='omm'>OMM</option>
             <option value='static'>Static</option>
-            <option value='topology'>Topology</option>
+            <option value='trajectory'>Trajectory</option>
           </Select>
         </FormControl>
         {(simulation.runner === 'ase' || simulation.runner === 'omm') &&
-          <FileInput 
+          <SimulationFileInput 
             id="config-input"
             text="Choose config"
             url={simulation.config_url}
             accept="*/*"
             onChange={onChangeConfig}
             uploadProgress={uploadConfigProgress}
+            allowManualUrl={true}
           />
         }
-        {(simulation.runner === 'topology' || simulation.runner === 'static') &&
-          <FileInput 
+        {(simulation.runner === 'trajectory' || simulation.runner === 'static') &&
+          <SimulationFileInput 
             id="topology-input"
             text="Choose topology"
             url={simulation.topology_url}
             accept="*/*"
             onChange={onChangeTopology}
             uploadProgress={uploadTopologyProgress}
+            allowManualUrl={true}
           />
         }
-        {simulation.runner === 'topology' &&
-          <FileInput 
+        {simulation.runner === 'trajectory' &&
+          <SimulationFileInput 
             id="trajectory-input"
             text="Choose trajectory"
             url={simulation.trajectory_url}
             accept="*/*"
             onChange={onChangeTrajectory}
             uploadProgress={uploadTrajectoryProgress}
+            allowManualUrl={true}
           />
         }
         {false &&
-          <FileInput 
+          <SimulationFileInput 
             id="rendering-input"
             text="Choose rendering"
             url={simulation.rendering_url}
             accept="*/*"
             onChange={onChangeRendering}
             uploadProgress={uploadRenderingProgress}
+            allowManualUrl={true}
           />
         }
         <Button 
