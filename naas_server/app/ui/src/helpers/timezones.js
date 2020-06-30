@@ -1,4 +1,5 @@
 // This is taken from https://marketplace.zoom.us/docs/api-reference/other-references/abbreviation-lists#timezones
+// And then filtered by supported timezones in moment-timezone
 export function getSupportedTimezones() {
   return [
     'Africa/Algiers',
@@ -16,7 +17,6 @@ export function getSupportedTimezones() {
     'Africa/Tunis',
     'America/Anchorage',
     'America/Araguaina',
-    'America/Argentina',
     'America/Bogota',
     'America/Caracas',
     'America/Chicago',
@@ -98,7 +98,6 @@ export function getSupportedTimezones() {
     'Australia/Perth',
     'Australia/Sydney',
     'Canada/Atlantic',
-    'CET	Sarajevo',
     'Etc/Greenwich',
     'Europe/Amsterdam',
     'Europe/Athens',
@@ -126,7 +125,6 @@ export function getSupportedTimezones() {
     'Europe/Vienna',
     'Europe/Warsaw',
     'Europe/Zurich',
-    'Pacific/Api',
     'Pacific/Auckland',
     'Pacific/Fiji',
     'Pacific/Honolulu',
@@ -134,7 +132,5 @@ export function getSupportedTimezones() {
     'Pacific/Noumea',
     'Pacific/Pago_Pago',
     'Pacific/Port_Moresby',
-    'SST	Solomon',
-    'UTC	Universal',
   ]
 }

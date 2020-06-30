@@ -16,6 +16,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Tooltip from '@material-ui/core/Tooltip';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
 function SimulationCardContent({ simulation }) {
   const classes = useStyles();
   return (
-    <React.Fragment>
+    <>
       <CardMedia
         className={classes.cardMedia}
         image={simulation.image_url}
@@ -82,7 +83,7 @@ function SimulationCardContent({ simulation }) {
           {simulation.description}
         </Typography>
       </CardContent>
-    </React.Fragment>
+    </>
   )
 }
 
@@ -156,12 +157,16 @@ const SimulationList = () => {
             }
             {manager &&
               <CardActions className={classes.cardActions}>
-                <IconButton component={Link} to={`/simulations/${simulation.id}`} >
-                  <EditIcon />
-                </IconButton>
-                <IconButton onClick={() => handleDeleteDialogOpen(simulation)} >
-                  <DeleteIcon />
-                </IconButton>
+                <Tooltip title="Edit">
+                  <IconButton component={Link} to={`/simulations/${simulation.id}`} >
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete">
+                  <IconButton onClick={() => handleDeleteDialogOpen(simulation)} aria-label="delete" >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
               </CardActions>
           }
           </Card>
