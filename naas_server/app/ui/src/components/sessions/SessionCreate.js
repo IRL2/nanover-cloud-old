@@ -48,19 +48,22 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
+const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss';
+
 const SessionCreate = () => {
   const defaultStartAt = moment().startOf('hour').add(1, 'hour');
   const classes = useStyles();
   const { sessionId } = useParams();
   const history = useHistory();
   const [session, setSession] = useState({
-    start_at: defaultStartAt.format('YYYY-MM-DDTHH:mm:ss'),
-    end_at: defaultStartAt.add(1, 'hours').format('YYYY-MM-DDTHH:mm:ss'),
+    start_at: defaultStartAt.format(DATE_FORMAT),
+    end_at: defaultStartAt.add(1, 'hours').format(DATE_FORMAT),
     timezone: moment.tz.guess(true),
     branch: 'master',
     location: 'Frankfurt',
     record: false,
-    simulation: {}
+    simulation: {},
+    create_conference: true
   });
   const [loading, setLoading] = useState(true);
   const [simulationList, setSimulationList] = useState([]);
@@ -76,31 +79,32 @@ const SessionCreate = () => {
           const sessionResult = await getSession(sessionId);
           setSession(sessionResult);
         } else if (result.items.length > 0) {
-          session.simulation.id = result.items[0].id
-          setSession(session);
+          setSession(s => {
+            return {...s, simulation: { id: result.items[0].id }}
+          });
         }
       } catch (e) {
         console.log(e);
       }
       setLoading(false);
     })();
-  }, []);
+  }, [sessionId]);
 
   const onChangeBranch = e => {
-    session.branch = e.currentTarget.value
+    setSession({...session, branch: e.currentTarget.value});
   }
 
   const onChangeDescription = e => {
-    session.description = e.currentTarget.value
+    setSession({...session, description: e.currentTarget.value});
   }
 
   const onChangeLocation = e => {
-    session.location = e.currentTarget.value
+    setSession({...session, location: e.currentTarget.value});
   }
 
   const onChangeTimezone = e => {
     const select = e.currentTarget;
-    session.timezone = select.options[select.selectedIndex].value
+    setSession({...session, timezone: select.options[select.selectedIndex].value});
   }
 
   const onChangeSimulation = e => {
@@ -109,15 +113,19 @@ const SessionCreate = () => {
   }
 
   const onChangeStartAt = e => {
-    session.start_at = e.currentTarget.value + ':00';
+    setSession({...session, start_at: e.currentTarget.value + ':00'});
   }
 
   const onChangeEndAt = e => {
-    session.end_at = e.currentTarget.value + ':00';
+    setSession({...session, end_at: e.currentTarget.value + ':00'});
   }
 
   const onChangeRecord = e => {
-    session.record = e.currentTarget.checked;
+    setSession({...session, record: e.currentTarget.checked});
+  }
+
+  const onChangeCreateConference = e => {
+    setSession({...session, create_conference: e.currentTarget.checked});
   }
 
   const onSubmit = async e => {
@@ -175,6 +183,9 @@ const SessionCreate = () => {
             defaultValue={session.start_at}
             onChange={onChangeStartAt}
             className={classes.formDate}
+            inputProps={{ 
+              'min': defaultStartAt.format(DATE_FORMAT)
+            }}
           />
           <TextField
             label="End at"
@@ -183,6 +194,10 @@ const SessionCreate = () => {
             defaultValue={session.end_at}
             onChange={onChangeEndAt}
             className={classes.formDate}
+            inputProps={{ 
+              'min': session.start_at,
+              'max': moment(session.start_at).add(2, 'hours').format(DATE_FORMAT)
+            }}
           />
           <FormControl variant="outlined">
             <InputLabel>Timezone</InputLabel>
@@ -208,9 +223,9 @@ const SessionCreate = () => {
             onChange={onChangeLocation}
             label="Server location"
           >
-            <option value='Ashburn'>Ashburn, US</option>
-            <option value='Frankfurt'>Frankfurt, DE</option>
-            <option value='London'>London, UK</option>
+            <option value='Frankfurt'>Frankfurt</option>
+            <option value='London'>London</option>
+            <option value='Ashburn'>Washington, D.C.</option>
           </Select>
         </FormControl>
         <TextField
@@ -230,6 +245,18 @@ const SessionCreate = () => {
           }
           label="Record session"
         />
+        {!sessionId && 
+          <FormControlLabel variant="outlined" className={classes.formControl}
+            control={
+              <Checkbox
+                defaultChecked={session.create_conference}
+                onChange={onChangeCreateConference}
+                color="primary"
+              />
+            }
+            label="Create Zoom meeting"
+          />
+        }
         <Button 
           type="submit"
           color="primary"

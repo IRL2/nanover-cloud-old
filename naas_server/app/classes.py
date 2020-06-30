@@ -2,11 +2,8 @@ from . import utils
 from datetime import datetime
 
 
-
-
-
 class Session:
-    public_fields = ['description', 'start_at', 'timezone', 'end_at', 'record', 'location', 'branch']
+    public_fields = ['description', 'start_at', 'timezone', 'end_at', 'record', 'location', 'branch', 'create_conference']
 
     def __init__(self, data):
         d = data if utils.is_dict(data) else data.to_dict()
@@ -20,9 +17,10 @@ class Session:
         self.terminate_at = d.get('terminate_at', None)
         self.timezone = d.get('timezone', None)
         self.record = d.get('record', False)
+        self.create_conference = d.get('create_conference', False)
         self.location = d.get('location', None)
         self.branch = d.get('branch', None)
-        self.oci_instance = OciInstance(d['oci_instance']) if d.get('oci_instance', None) is not None else OciInstance({'status': 'PENDING'})
+        self.instance = Instance(d['instance']) if d.get('instance', None) is not None else Instance({'status': 'PENDING'})
         self.simulation = Simulation(d['simulation']) if d.get('simulation', None) is not None else None
         self.zoom_meeting = ZoomMeeting(d['zoom_meeting']) if d.get('zoom_meeting', None) is not None else None
 
@@ -55,7 +53,7 @@ class User:
 
 
 class Simulation:
-    public_fields = ['name', 'description', 'author', 'citation', 'image_url', 'runner', 'config_url', 'topology_url', 'trajectory_url', 'rendering_url']
+    public_fields = ['name', 'description', 'author', 'citation', 'image_url', 'runner', 'config_url', 'topology_url', 'trajectory_url', 'rendering_url', 'public']
 
     def __init__(self, data):
         d = data if utils.is_dict(data) else data.to_dict()
@@ -72,6 +70,7 @@ class Simulation:
         self.topology_url = d.get('topology_url', None)
         self.trajectory_url = d.get('trajectory_url', None)
         self.rendering_url = d.get('rendering_url', None)
+        self.public = d.get('public', False)
 
     def to_dict(self):
         return utils.to_dict(self)
@@ -101,11 +100,11 @@ class ZoomMeeting:
         return utils.to_dict(self)
 
 
-class OciInstance:
+class Instance:
     def __init__(self, data):
         if data:
-            self.status = data.get('status', None)  # PENDING, WARMING, LAUNCHED, FAILED,
-            self.job_id = data.get('job_id', None)
+            self.status = data.get('status', None)  # PENDING, WARMING, LAUNCHED, FAILED, STOPPED
+            self.id = data.get('id', None)
             self.ip = data.get('ip', None)
 
     def to_dict(self):

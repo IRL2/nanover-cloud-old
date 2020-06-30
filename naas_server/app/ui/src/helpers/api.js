@@ -58,6 +58,10 @@ export async function deleteSimulation(simulationId) {
   return _delete(`${BASE_API_URL}/api/simulations/${simulationId}`);
 }
 
+export async function deleteInstance(sessionId) {
+  return _delete(`${BASE_API_URL}/api/sessions/${sessionId}/instance`);
+}
+
 async function _get(url) {
   const response = await axios.get(url, await headers());
   return response.data;

@@ -14,8 +14,8 @@ def now_plus_seconds(seconds):
     return datetime_plus_seconds(datetime.now(), seconds)
 
 
-def datetime_difference_in_minutes(start_at, end_at):
-    return (end_at - start_at) / timedelta(minutes=1)
+def difference_in_minutes(start_at, end_at):
+    return (to_datetime(end_at) - to_datetime(start_at)) / timedelta(minutes=1)
 
 
 def generate_id():

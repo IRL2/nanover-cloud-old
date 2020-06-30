@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/core/styles';
-import { getSessions, deleteSession } from '../../helpers/api';
+import { getSessions, deleteSession, deleteInstance } from '../../helpers/api';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -19,6 +19,7 @@ import Paper from '@material-ui/core/Paper';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import CancelIcon from '@material-ui/icons/Cancel';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -26,7 +27,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { Typography } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -57,12 +59,18 @@ const useStyles = makeStyles((theme) => ({
   tdActions: {
     minWidth: 130
   },
+  tdNarupaContent: {
+    display: 'flex'
+  },
+  tdNarupaIcon: {
+    fontSize: 14
+  },
   copyableLink: {
     display: 'flex',
     alignItems: 'center'
   },
   copyableLinkIcon: {
-    fontSize: 14
+    fontSize: 14,
   }
 }));
 
@@ -94,11 +102,12 @@ function CopyableLink({ url, display }) {
       </a>
       <CopyToClipboard 
         text={url}
-        onCopy={() => console.log('copied')}
       >
-        <IconButton>
-          <FileCopyIcon className={classes.copyableLinkIcon}/>
-        </IconButton>
+        <Tooltip title="Copy">
+          <IconButton>
+            <FileCopyIcon className={classes.copyableLinkIcon}/>
+          </IconButton>
+        </Tooltip>
       </CopyToClipboard>
     </div>
   )
@@ -124,6 +133,8 @@ const SessionList = () => {
   const [sessionList, setSessionList] = useState([]);
   const [deletingSession, setDeletingSession] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [stoppingSession, setStoppingSession] = useState(null);
+  const [stopping, setStopping] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [simulationDialog, setSimulationDialog] = useState(null);
 
@@ -156,21 +167,48 @@ const SessionList = () => {
     setDeletingSession(null);
   };
 
+  const handleStopDialogOpen = session => setStoppingSession(session);
+
+  const handleStopDialogClose = async (confirm) => {
+    setStopping(true);
+    if (confirm) {
+      try {
+        await deleteInstance(stoppingSession.id);
+        const result = await getSessions();
+        setSessionList(result.items);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    setStopping(false);
+    setStoppingSession(null);
+  };
+
   const handleChangeTab = (e, newValue) => setTabValue(newValue);
 
   const handleSimulationDialogClose = () => setSimulationDialog(null);
 
   const onClickSimulation = (simulation) => setSimulationDialog(simulation);
 
-  const getNarupaText = session => {
-    const oci = session.oci_instance;
-    if (oci) {
-      if (oci.status === 'PENDING') {
+  const getNarupaContent = session => {
+    const instance = session.instance;
+    if (instance) {
+      if (instance.status === 'PENDING') {
         return 'Pending';
-      } else if (oci.status === 'WARMING') {
+      } else if (instance.status === 'WARMING') {
         return 'Warming up';
-      } else if (oci.status === 'LAUNCHED') {
-        return <CopyableLink url={`${oci.ip}`} display={oci.ip}/>;
+      } else if (instance.status === 'STOPPED') {
+        return 'Stopped';
+      } else if (instance.status === 'LAUNCHED') {
+        return (
+          <div className={classes.tdNarupaContent}>
+            <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
+            <Tooltip title="Stop">
+              <IconButton onClick={() => handleStopDialogOpen(session)}>
+                <CancelIcon className={classes.tdNarupaIcon}/>
+              </IconButton>
+            </Tooltip>
+          </div>);
       } else {
         return 'Unknown';
       }
@@ -205,6 +243,7 @@ const SessionList = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Time</TableCell>
+                <TableCell>Description</TableCell>
                 <TableCell>Simulation</TableCell>
                 <TableCell>Conference</TableCell>
                 <TableCell>Narupa</TableCell>
@@ -218,13 +257,15 @@ const SessionList = () => {
                     <FormattedSessionDate session={session} />
                   </TableCell>
                   <TableCell>
-                    <a 
-                      href="#" 
+                    <Typography>{session.description}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Button
                       onClick={() => onClickSimulation(session.simulation)}
                       className={classes.link}
                     >
                       <Typography>{session.simulation.name}</Typography>
-                    </a>
+                    </Button>
                   </TableCell>
                   <TableCell>
                     {session.zoom_meeting ?
@@ -235,17 +276,21 @@ const SessionList = () => {
                     : ''}
                   </TableCell>
                   <TableCell>
-                    <Typography>{getNarupaText(session)}</Typography>
+                    {getNarupaContent(session)}
                   </TableCell>
                   <TableCell className={classes.tdActions}>
-                    {session.oci_instance.status === 'PENDING' && 
-                      <IconButton component={Link} to={`/sessions/${session.id}`} >
-                        <EditIcon />
-                      </IconButton>
+                    {session.instance.status === 'PENDING' && 
+                      <Tooltip title="Edit">
+                        <IconButton component={Link} to={`/sessions/${session.id}`} >
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
                     }
-                    <IconButton onClick={() => handleDeleteDialogOpen(session)} >
-                      <DeleteIcon />
-                    </IconButton>
+                    <Tooltip title="Delete">
+                      <IconButton onClick={() => handleDeleteDialogOpen(session)} >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
@@ -259,6 +304,7 @@ const SessionList = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Time</TableCell>
+                <TableCell>Description</TableCell>
                 <TableCell>Simulation</TableCell>
                 <TableCell>Recording</TableCell>
               </TableRow>
@@ -270,13 +316,16 @@ const SessionList = () => {
                     <FormattedSessionDate session={session} />
                   </TableCell>
                   <TableCell>
-                    <a 
+                    <Typography>{session.description}</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Button
                       href="#" 
                       onClick={() => onClickSimulation(session.simulation)}
                       className={classes.link}
                     >
                       <Typography>{session.simulation.name}</Typography>
-                    </a>
+                    </Button>
                   </TableCell>
                   <TableCell>
                     <Typography>{session.recording}</Typography>
@@ -297,6 +346,20 @@ const SessionList = () => {
             Cancel
           </Button>
           <Button onClick={() => handleDeleteDialogClose(true)} color="primary" autoFocus disabled={deleting}>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={stoppingSession != null}
+        onClose={() => handleStopDialogClose(false)}
+      >
+        <DialogTitle>Are you sure you want to stop Narupa?</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => handleStopDialogClose(false)} color="secondary" disabled={stopping}>
+            Cancel
+          </Button>
+          <Button onClick={() => handleStopDialogClose(true)} color="primary" autoFocus disabled={stopping}>
             Yes
           </Button>
         </DialogActions>
