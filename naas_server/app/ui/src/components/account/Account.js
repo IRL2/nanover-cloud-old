@@ -79,7 +79,7 @@ const Account = () => {
             variant="contained"
             color="primary"
             component="a"
-            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=sJQ6vA2iTNqlIQioeyb7YA&redirect_uri=${encodeURIComponent(zoomRedirectUri)}`}
+            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=q8grQrXVRoSkXhnZvuTjw&redirect_uri=${encodeURIComponent(zoomRedirectUri)}`}
             className={classes.connectToZoom}
             >Connect to Zoom</Button>
           }</Typography>
