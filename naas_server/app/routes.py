@@ -155,6 +155,7 @@ def local_status(job_id):
     ip = ''
     narupa_status = False
     oci_state = None
+    metadata = {}
     try:
         oci_state, ip, narupa_status, metadata = libinstance.check_instance(job_id)
     except Exception as err:
