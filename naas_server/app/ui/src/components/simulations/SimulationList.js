@@ -94,7 +94,7 @@ const SimulationList = () => {
   const [simulationList, setSimulationList] = useState([]);
   const [deletingSimulation, setDeletingSimulation] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [manager, setManager] = useState(false);
+  const [me, setMe] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -102,7 +102,7 @@ const SimulationList = () => {
         const result = await getSimulations();
         setSimulationList(result.items);
         const me = await getMe();
-        setManager(!!me.can_manage_simulations);
+        setMe(me);
       } catch (e) {
         console.log(e);
       }
@@ -134,28 +134,26 @@ const SimulationList = () => {
     <CircularProgress />
     :
     <div className={classes.root}>
-      {manager && 
-        <Button
-          color="primary"
-          variant="contained"
-          className={classes.createSimulation}
-          component={Link}
-          to="/simulations/create"
-        >
-          Add a simulation
-        </Button>
-      }
+      <Button
+        color="primary"
+        variant="contained"
+        className={classes.createSimulation}
+        component={Link}
+        to="/simulations/create"
+      >
+        Add a simulation
+      </Button>
       <div className={classes.container}>
         {simulationList.map((simulation) =>
           <Card className={classes.card} key={simulation.id}>
-            {manager ? 
+            {simulation.user_id === me.id ? 
               <CardActionArea component={Link} to={`/simulations/${simulation.id}`} >
                 <SimulationCardContent simulation={simulation} />
               </CardActionArea>
             : 
               <SimulationCardContent simulation={simulation} />
             }
-            {manager &&
+            {simulation.user_id === me.id &&
               <CardActions className={classes.cardActions}>
                 <Tooltip title="Edit">
                   <IconButton component={Link} to={`/simulations/${simulation.id}`} >
