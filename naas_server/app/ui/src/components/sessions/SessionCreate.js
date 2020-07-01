@@ -112,12 +112,14 @@ const SessionCreate = () => {
     session.simulation.id = select.options[select.selectedIndex].value
   }
 
+  const appendSeconds = t => t.length === 16 ? t + ':00' : t
+
   const onChangeStartAt = e => {
-    setSession({...session, start_at: e.currentTarget.value + ':00'});
+    setSession({...session, start_at: appendSeconds(e.currentTarget.value)});
   }
 
   const onChangeEndAt = e => {
-    setSession({...session, end_at: e.currentTarget.value + ':00'});
+    setSession({...session, end_at: appendSeconds(e.currentTarget.value)});
   }
 
   const onChangeRecord = e => {
