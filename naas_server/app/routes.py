@@ -293,7 +293,11 @@ def warm_up():
             session = classes.Session(doc)
             if session.has_warm_up_at_passed():
                 meta = {'branch': session.branch}
-                runner = session.simulation.runner
+                simulation = session.simulation
+                meta['name'] = simulation.name
+                meta['description'] = simulation.description
+                runner = simulation.runner
+                meta['runner'] = runner
                 if runner == 'ase' or runner == 'omm':
                     meta['simulation'] = session.simulation.config_url
                 if runner == 'static':
