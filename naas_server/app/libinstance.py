@@ -3,7 +3,7 @@ import oci
 import time
 import datetime
 from narupa.trajectory.frame_client import FrameClient
-from narupa.protocol.trajectory import GetFrameRequest
+from narupa.protocol.command import GetCommandsRequest
 import grpc
 
 OCID = {
@@ -124,11 +124,11 @@ def _get_public_ip(compute_client, virtual_network_client, instance):
 
 def _get_narupa_status(public_ip, port):
     channel = FrameClient.insecure_channel(address=public_ip, port=port)
-    request = GetFrameRequest()
+    request = GetCommandsRequest()
     try:
-        channel.stub.GetFrame(request, timeout=1)
-    except grpc._channel._Rendezvous as error:
-        return error.code() == grpc.StatusCode.UNIMPLEMENTED
+        channel._command_stub.GetCommands(request, timeout=1)
+    except (grpc._channel._Rendezvous, grpc._channel._InactiveRpcError):
+        return False
     finally:
         channel.close()
     return True
