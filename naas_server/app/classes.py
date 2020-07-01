@@ -40,7 +40,7 @@ class User:
         self.created_at = d.get('created_at', utils.generate_created_at())
         self.name = d.get('name', None)
         self.email = d.get('email', None)
-        self.can_manage_simulations = d.get('can_manage_simulations', None)
+        self.can_make_simulations_public = d.get('can_make_simulations_public', None)
         self.can_view_stats = d.get('can_view_stats', None)
         self.firebase_uid = d.get('firebase_uid', None)
         self.zoom = UserZoom(d['zoom']) if d.get('zoom', None) is not None else None
