@@ -275,7 +275,7 @@ def warm_up_check():
 
             target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
             response_json = requests.get(target).json()
-            state = response_json['status']
+            state = response_json['oci_state']
             if state in STATES_AVAILABLE:
                 session.instance.status = 'LAUNCHED'
                 session.instance.ip = response_json['ip']
