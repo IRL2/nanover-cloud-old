@@ -41,7 +41,7 @@ DEFAULT_FILENAME = 'helen.xml'
 REPO_URL = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/'
 MANIFEST = 'https://gitlab.com/intangiblerealities/narupacloud/narupa-cloud-simulation-inputs/-/raw/json/manifest.txt'
 REGIONS = {
-    'Frankfurt': {'url': 'https://dev.narupa.xyz', 'string': 'eu-frankfurt-1'},
+    'Frankfurt': {'url': 'https://app.narupa.xyz', 'string': 'eu-frankfurt-1'},
     'London': {'url': 'http://152.67.129.75', 'string': 'uk-london-1'},
     'Ashburn': {'url': 'http://129.213.120.237', 'string': 'iad'},
 }
