@@ -159,7 +159,7 @@ def local_status(job_id):
     try:
         oci_state, ip, narupa_status, metadata = libinstance.check_instance(job_id)
     except Exception as err:
-        print(err)
+        logging.error(err)
         available = False
     if available and oci_state not in STATES_AVAILABLE:
         available = False
@@ -182,6 +182,7 @@ def local_terminate(job_id):
 
 @app.route('/local/v1/instance', methods=['POST'])
 def local_launch():
+    logging.info(f'Request to start session {request.json}.')
     if ('region' in request.json
             and request.json['region'] != get_current_region()):
         raise BadRequest
