@@ -509,11 +509,15 @@ def get_simulation(simulation_id):
 @app.route('/api/simulations', methods=['POST'])
 def create_simulation():
     user = get_user_from_request(request)
-    if user is None or user.can_manage_simulations is not True:
+    if user is None:
         raise Unauthorized
 
     simulation = classes.Simulation(utils.pick(request.json, classes.Simulation.public_fields))
     simulation.user_id = user.id
+
+    if simulation.public and not user.can_make_simulations_public:
+        raise BadRequest
+
     db_document('simulations', simulation.id).set(simulation.to_dict())
     return simulation.to_dict()
 
@@ -521,8 +525,12 @@ def create_simulation():
 @app.route('/api/simulations/<simulation_id>', methods=['PUT'])
 def update_simulation(simulation_id):
     user = get_user_from_request(request)
-    if user is None or user.can_manage_simulations is not True:
+    if user is None:
         raise Unauthorized
+
+    simulation = classes.Simulation(db_document('simulations', simulation_id).get())
+    if simulation.public and not user.can_make_simulations_public:
+        raise BadRequest
 
     updates = utils.pick(request.json, classes.Simulation.public_fields)
     db_document('simulations', simulation_id).update(updates)
@@ -532,9 +540,13 @@ def update_simulation(simulation_id):
 @app.route('/api/simulations/<simulation_id>', methods=['DELETE'])
 def delete_simulation(simulation_id):
     user = get_user_from_request(request)
-    if user is None or user.can_manage_simulations is not True:
+    if user is None:
         raise Unauthorized
-    
+
+    simulation = classes.Simulation(db_document('simulations', simulation_id).get())
+    if simulation.public and not user.can_make_simulations_public:
+        raise BadRequest
+
     db_document('simulations', simulation_id).delete()
     return no_content()
 
