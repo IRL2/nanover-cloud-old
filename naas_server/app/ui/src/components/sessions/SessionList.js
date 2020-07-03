@@ -60,9 +60,6 @@ const useStyles = makeStyles((theme) => ({
   tdActions: {
     minWidth: 130
   },
-  tdNarupaContent: {
-    display: 'flex'
-  },
   tdNarupaIcon: {
     fontSize: 14
   },
@@ -207,15 +204,7 @@ const SessionList = () => {
       } else if (instance.status === 'STOPPED') {
         return 'Stopped';
       } else if (instance.status === 'LAUNCHED') {
-        return (
-          <div className={classes.tdNarupaContent}>
-            <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
-            <Tooltip title="Stop">
-              <IconButton onClick={() => handleStopDialogOpen(session)}>
-                <CancelIcon className={classes.tdNarupaIcon}/>
-              </IconButton>
-            </Tooltip>
-          </div>);
+        return <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
       } else {
         return 'Unknown';
       }
@@ -287,17 +276,26 @@ const SessionList = () => {
                   </TableCell>
                   <TableCell className={classes.tdActions}>
                     {session.instance.status === 'PENDING' && 
-                      <Tooltip title="Edit">
-                        <IconButton component={Link} to={`/sessions/${session.id}`} >
-                          <EditIcon />
+                      <>
+                        <Tooltip title="Edit">
+                          <IconButton component={Link} to={`/sessions/${session.id}`} >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton onClick={() => handleDeleteDialogOpen(session)} >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    }
+                    {(session.instance.status === 'LAUNCHED' || session.instance.status === 'WARMING') && 
+                      <Tooltip title="Stop">
+                        <IconButton onClick={() => handleStopDialogOpen(session)}>
+                          <CancelIcon />
                         </IconButton>
                       </Tooltip>
                     }
-                    <Tooltip title="Delete">
-                      <IconButton onClick={() => handleDeleteDialogOpen(session)} >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
