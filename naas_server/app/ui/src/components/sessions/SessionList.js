@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { getSessions, deleteSession, deleteInstance } from '../../helpers/api';
+import { useInterval } from '../../helpers/utils';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -138,17 +139,23 @@ const SessionList = () => {
   const [tabValue, setTabValue] = useState(0);
   const [simulationDialog, setSimulationDialog] = useState(null);
 
+  const refreshSessionList = async () => {
+    try {
+      const result = await getSessions();
+      setSessionList(result.items);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   useEffect(() => {
     (async () => {
-      try {
-        const result = await getSessions();
-        setSessionList(result.items);
-      } catch (e) {
-        console.log(e);
-      }
+      refreshSessionList();
       setLoading(false);
     })();
   }, []);
+
+  useInterval(refreshSessionList, 30 * 1000);
 
   const handleDeleteDialogOpen = session => setDeletingSession(session);
 
