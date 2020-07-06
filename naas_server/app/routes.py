@@ -280,6 +280,9 @@ def warm_up_check():
                 session.instance.status = 'LAUNCHED'
                 session.instance.ip = response_json['ip']
                 db_document('sessions', session.id).set(session.to_dict())
+            if state == 'FAILED':
+                session.instance.status = 'FAILED'
+                db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
             logging.warning('Unable to check session: {}, with error: {}'.format(doc.id, e))
 

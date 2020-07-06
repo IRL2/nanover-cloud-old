@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { getSessions, deleteSession, deleteInstance } from '../../helpers/api';
+import { useInterval } from '../../helpers/utils';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -58,9 +59,6 @@ const useStyles = makeStyles((theme) => ({
   },
   tdActions: {
     minWidth: 130
-  },
-  tdNarupaContent: {
-    display: 'flex'
   },
   tdNarupaIcon: {
     fontSize: 14
@@ -138,17 +136,23 @@ const SessionList = () => {
   const [tabValue, setTabValue] = useState(0);
   const [simulationDialog, setSimulationDialog] = useState(null);
 
+  const refreshSessionList = async () => {
+    try {
+      const result = await getSessions();
+      setSessionList(result.items);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   useEffect(() => {
     (async () => {
-      try {
-        const result = await getSessions();
-        setSessionList(result.items);
-      } catch (e) {
-        console.log(e);
-      }
+      refreshSessionList();
       setLoading(false);
     })();
   }, []);
+
+  useInterval(refreshSessionList, 30 * 1000);
 
   const handleDeleteDialogOpen = session => setDeletingSession(session);
 
@@ -200,15 +204,7 @@ const SessionList = () => {
       } else if (instance.status === 'STOPPED') {
         return 'Stopped';
       } else if (instance.status === 'LAUNCHED') {
-        return (
-          <div className={classes.tdNarupaContent}>
-            <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
-            <Tooltip title="Stop">
-              <IconButton onClick={() => handleStopDialogOpen(session)}>
-                <CancelIcon className={classes.tdNarupaIcon}/>
-              </IconButton>
-            </Tooltip>
-          </div>);
+        return <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
       } else {
         return 'Unknown';
       }
@@ -280,17 +276,26 @@ const SessionList = () => {
                   </TableCell>
                   <TableCell className={classes.tdActions}>
                     {session.instance.status === 'PENDING' && 
-                      <Tooltip title="Edit">
-                        <IconButton component={Link} to={`/sessions/${session.id}`} >
-                          <EditIcon />
+                      <>
+                        <Tooltip title="Edit">
+                          <IconButton component={Link} to={`/sessions/${session.id}`} >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton onClick={() => handleDeleteDialogOpen(session)} >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    }
+                    {(session.instance.status === 'LAUNCHED' || session.instance.status === 'WARMING') && 
+                      <Tooltip title="Stop">
+                        <IconButton onClick={() => handleStopDialogOpen(session)}>
+                          <CancelIcon />
                         </IconButton>
                       </Tooltip>
                     }
-                    <Tooltip title="Delete">
-                      <IconButton onClick={() => handleDeleteDialogOpen(session)} >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
