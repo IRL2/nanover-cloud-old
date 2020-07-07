@@ -275,12 +275,11 @@ def warm_up_check():
 
             target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
             response_json = requests.get(target).json()
-            state = response_json['oci_state']
-            if state in STATES_AVAILABLE:
+            if response_json['narupa_status']:
                 session.instance.status = 'LAUNCHED'
                 session.instance.ip = response_json['ip']
                 db_document('sessions', session.id).set(session.to_dict())
-            if state == 'FAILED':
+            elif response_json['oci_state'] == 'FAILED':
                 session.instance.status = 'FAILED'
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
