@@ -265,6 +265,25 @@ def api_launch():
     return jsonify(response_json)
 
 
+@scheduler.task('cron', id='launched_check', minute='*')
+@app.route('/api/launched-check')
+def launched_check():
+    docs = db.collection('sessions').where('instance.status', '==', 'LAUNCHED').stream()
+    for doc in docs:
+        try:
+            session = classes.Session(doc)
+            target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
+            response_json = requests.get(target).json()
+            if not response_json['narupa_status']:
+                session.instance.status = 'STOPPED'
+                session.instance.ip = None
+                db_document('sessions', session.id).set(session.to_dict())
+        except Exception as e:
+            logging.warning('Unable to check launched session: {}, with error: {}'.format(doc.id, e))
+
+    return no_content()
+
+
 @scheduler.task('cron', id='warm_up_check', minute='*')
 @app.route('/api/warm-up-check')
 def warm_up_check():
@@ -272,7 +291,6 @@ def warm_up_check():
     for doc in docs:
         try:
             session = classes.Session(doc)
-
             target = f"{REGIONS[session.location]['url']}/local/v1/instance/{session.instance.id}"
             response_json = requests.get(target).json()
             state = response_json['oci_state']
@@ -284,7 +302,7 @@ def warm_up_check():
                 session.instance.status = 'FAILED'
                 db_document('sessions', session.id).set(session.to_dict())
         except Exception as e:
-            logging.warning('Unable to check session: {}, with error: {}'.format(doc.id, e))
+            logging.warning('Unable to check warming session: {}, with error: {}'.format(doc.id, e))
 
     return no_content()
 
