@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from 'react-router-dom'
 import GoogleButton from 'react-google-button'
+import Footer from '../Footer';
 import { makeStyles } from '@material-ui/core/styles';
 import { login, loginWithGoogle, register } from "../../helpers/auth";
 import { createUser } from "../../helpers/api";
@@ -186,6 +187,7 @@ const Auth = ({ registering = false }) => {
           }
         </div>
       </div>
+      <Footer/>
     </div>
   );
 };

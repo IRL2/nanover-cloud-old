@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom'
+import Footer from './Footer';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -101,6 +102,7 @@ const Main = ({component: Component, props, breadcrumbs}) => {
         </ListItem>
       </List>
       <Divider />
+      <Footer/>
     </div>
   );
 
