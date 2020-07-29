@@ -315,6 +315,7 @@ def warm_up():
             session = classes.Session(doc)
             if session.has_warm_up_at_passed():
                 meta = {'branch': session.branch}
+                meta['end_at'] = session.end_at_utc
                 simulation = session.simulation
                 meta['name'] = simulation.name
                 meta['description'] = simulation.description

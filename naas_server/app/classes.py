@@ -37,6 +37,13 @@ class Session:
 
         return now > when
 
+    @property
+    def end_at_utc(self):
+        timezone = pytz.timezone(self.timezone)
+        when_naive = utils.to_datetime(self.end_at)
+        when_aware = timezone.localize(when_naive)
+        when_utc = when_aware.astimezone(pytz.utc)
+        return when_utc.strftime('%Y-%m-%dT%H:%M:%S')
 
 
 class User:
