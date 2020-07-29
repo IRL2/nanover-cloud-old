@@ -1,5 +1,7 @@
 from . import utils
 from datetime import datetime
+import pytz
+import logging
 
 
 class Session:
@@ -28,7 +30,13 @@ class Session:
         return utils.to_dict(self)
 
     def has_warm_up_at_passed(self):
-        return datetime.now() > utils.to_datetime(self.warm_up_at)
+        now = datetime.now(pytz.utc)
+        timezone = pytz.timezone(self.timezone)
+        when_naive = utils.to_datetime(self.warm_up_at)
+        when = timezone.localize(when_naive)
+
+        return now > when
+
 
 
 class User:
