@@ -420,7 +420,7 @@ def create_session():
     if utils.difference_in_minutes(session.start_at, session.end_at) > 120:
         raise BadRequest('Session is longer than 2 hour limit')
 
-    if session.branch not in gitlab.list_branches('19161776'):
+    if not gitlab.has_branch('11262591', session.branch):
         raise BadRequest('Invalid branch')
     
     simulation = db_document('simulations', body['simulation']['id']).get()
