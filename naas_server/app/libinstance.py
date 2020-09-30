@@ -36,7 +36,12 @@ INSTANCE_PARAM = {
     'Frankfurt': {
         'images': {
             #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaaauscs5yvcd4kpmjbdotmrfikmytnk5srwkbqdfz6gfbmtb4zekja',
-            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaahxokhjxn5rahoe3ip4bhmmwhh7tf3a2yyex3zrh5gawf5lll67ua',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaahxokhjxn5rahoe3ip4bhmmwhh7tf3a2yyex3zrh5gawf5lll67ua',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaambr5djtxy2aj6f3cngto6kkmjasqop3eh3evozxufs27z2nznvxq',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaavqpmek3ddi5sq7lbwsoofocqmudbiebhldgftplrnv3bvkcjulha',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaav364ixxqmyy5rfbaf7crlay65x5sx7zfkeerpodthotdffbex6ea',
+            #'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa4lmbl2hwou5c3mafcmpawlpuvtpurwl7s7lkhuqcwbyiitw26teq',
+            'git': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaajukbhjvgwn2x7wcamensbgzipycdyjcazbnxsn6cx6mzskzdzc2q',
             'ase': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaa7z3oigk4mh4dirxzwusvcldp6s7lhratzpbzbaywsxew62h5eyfq',
             'omm': 'ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatm3ehj6kq72wtiguat6oe6wom32kyyyn7h2ukltphobpq3audmha',
         },
