@@ -183,11 +183,12 @@ def local_terminate(job_id):
 @app.route('/local/v1/instance', methods=['POST'])
 def local_launch():
     logging.info(f'Request to start session {request.json}.')
+    current_region = get_current_region()
     if ('region' in request.json
-            and request.json['region'] != get_current_region()):
+            and request.json['region'] != current_region):
         raise BadRequest
 
-    region = request.json.get('region', 'Frankfurt')
+    region = request.json.get('region', current_region)
     extra_meta = dict(**request.json)
 
     try:
@@ -329,6 +330,8 @@ def warm_up():
                     meta['topology'] = session.simulation.topology_url
                     meta['trajectory'] = session.simulation.trajectory_url
 
+                logging.info(f'Trying to start instance in {session.location}. Meta is {meta}.')
+                logging.info(f"Local server is {REGIONS[session.location]['url']}/local/v1/instance")
                 response_json = requests.post(
                     f"{REGIONS[session.location]['url']}/local/v1/instance",
                     data=json.dumps(meta),
