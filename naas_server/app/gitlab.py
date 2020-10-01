@@ -1,4 +1,5 @@
 import requests
+import urllib
 
 
 def list_branches(project_id):
@@ -7,7 +8,8 @@ def list_branches(project_id):
 
 
 def has_branch(project_id, branch):
-    url = f'https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{branch}'
+    escape_branch = urllib.parse.quote(branch, safe='')
+    url = f'https://gitlab.com/api/v4/projects/{project_id}/repository/branches/{escape_branch}'
     response = requests.get(url)
     return response.status_code == requests.codes.ok
 
