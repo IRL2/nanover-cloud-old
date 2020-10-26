@@ -315,7 +315,9 @@ const SessionList = () => {
                 <TableCell>Time</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Simulation</TableCell>
+	  	{/*
                 <TableCell>Recording</TableCell>
+		*/}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -336,9 +338,11 @@ const SessionList = () => {
                       <Typography>{session.simulation.name}</Typography>
                     </Button>
                   </TableCell>
+		  {/*
                   <TableCell>
                     <Typography>{session.recording}</Typography>
                   </TableCell>
+		  */}
                 </TableRow>
               ))}
             </TableBody>
