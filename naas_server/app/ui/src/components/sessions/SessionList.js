@@ -241,7 +241,9 @@ const SessionList = () => {
                 <TableCell>Time</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Simulation</TableCell>
+	  	{/*
                 <TableCell>Conference</TableCell>
+		*/}
                 <TableCell>Narupa</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -263,6 +265,7 @@ const SessionList = () => {
                       <Typography>{session.simulation.name}</Typography>
                     </Button>
                   </TableCell>
+		  {/*
                   <TableCell>
                     {session.zoom_meeting ?
                       <CopyableLink
@@ -271,6 +274,7 @@ const SessionList = () => {
                       />
                     : ''}
                   </TableCell>
+		  */}
                   <TableCell>
                     {getNarupaContent(session)}
                   </TableCell>

@@ -72,6 +72,7 @@ const Account = () => {
           <Typography className={classes.detailKey}>Email:</Typography>
           <Typography>{me.email}</Typography>
         </div>
+	{/*
         <div className={classes.details}>
           <Typography className={classes.detailKey}>Zoom:</Typography>
           <Typography>{(me.zoom && me.zoom.access_token) ? 'Connected' : 
@@ -84,6 +85,7 @@ const Account = () => {
             >Connect to Zoom</Button>
           }</Typography>
         </div>
+	*/}
         <div className={classes.details}>
           <Typography className={classes.detailKey}>&nbsp;</Typography>
           <Typography>

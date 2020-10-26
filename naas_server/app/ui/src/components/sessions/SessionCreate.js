@@ -63,7 +63,8 @@ const SessionCreate = () => {
     location: 'Frankfurt',
     record: false,
     simulation: {},
-    create_conference: true
+    //create_conference: true
+    create_conference: false
   });
   const [loading, setLoading] = useState(true);
   const [simulationList, setSimulationList] = useState([]);
@@ -247,6 +248,7 @@ const SessionCreate = () => {
           }
           label="Record session"
         />
+	{/*
         {!sessionId && 
           <FormControlLabel variant="outlined" className={classes.formControl}
             control={
@@ -259,6 +261,7 @@ const SessionCreate = () => {
             label="Create Zoom meeting"
           />
         }
+	*/}
         <Button 
           type="submit"
           color="primary"
