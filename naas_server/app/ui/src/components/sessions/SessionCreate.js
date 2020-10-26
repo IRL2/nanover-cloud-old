@@ -238,6 +238,7 @@ const SessionCreate = () => {
           onChange={onChangeBranch}
           className={classes.formControl}
         />
+	{/*
         <FormControlLabel variant="outlined" className={classes.formControl}
           control={
             <Checkbox
@@ -248,6 +249,7 @@ const SessionCreate = () => {
           }
           label="Record session"
         />
+	*/}
 	{/*
         {!sessionId && 
           <FormControlLabel variant="outlined" className={classes.formControl}
