@@ -19,6 +19,7 @@ import HelpIcon from '@material-ui/icons/Help';
 import EmailIcon from '@material-ui/icons/Email';
 import LibraryBooksIcon from '@material-ui/icons/LibraryBooks';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 
 const drawerWidth = 240;
@@ -88,6 +89,10 @@ const Main = ({component: Component, props, breadcrumbs}) => {
         <ListItem button component={Link} to="/account">
           <ListItemIcon><AccountBoxIcon /></ListItemIcon>
           <ListItemText primary="Account" />
+        </ListItem>
+        <ListItem button component="a" href="https://gitlab.com/intangiblerealities/narupa-applications/narupa-imd/-/jobs/artifacts/master/download?job=build-StandaloneWindows64" target="_blank" rel="noreferrer noopener">
+          <ListItemIcon><GetAppIcon /></ListItemIcon>
+          <ListItemText primary="Get Narupa iMD" />
         </ListItem>
       </List>
       <Divider />
