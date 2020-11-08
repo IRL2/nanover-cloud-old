@@ -1,4 +1,6 @@
 import uuid
+import random
+import string
 from datetime import datetime, timedelta
 
 
@@ -7,7 +9,7 @@ def to_datetime(s):
 
 
 def datetime_plus_seconds(d, seconds):
-    return (d + timedelta(seconds=seconds)).replace(microsecond=0).isoformat()
+    return (d + timedelta(seconds=seconds)).replace(microsecond=0)
 
 
 def now_plus_seconds(seconds):
@@ -18,8 +20,16 @@ def difference_in_minutes(start_at, end_at):
     return (to_datetime(end_at) - to_datetime(start_at)) / timedelta(minutes=1)
 
 
+def difference_in_seconds(start_at, end_at):
+    return (to_datetime(end_at) - to_datetime(start_at)) / timedelta(seconds=1)
+
+
 def generate_id():
     return str(uuid.uuid4())
+
+
+def generate_short_id():
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(6))
 
 
 def generate_created_at():
@@ -27,8 +37,9 @@ def generate_created_at():
 
 
 def generate_warm_up_at(session):
-    return datetime_plus_seconds(to_datetime(session.start_at), -(15 * 60))
-
+    default_warm_up_at = datetime_plus_seconds(to_datetime(session.start_at), -(15 * 60))
+    warm_up_at = max(default_warm_up_at, datetime.now().replace(microsecond=0))
+    return warm_up_at.isoformat()
 
 def is_dict(d):
     return type(d) is dict

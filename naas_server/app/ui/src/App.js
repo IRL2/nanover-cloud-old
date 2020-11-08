@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Route, BrowserRouter, Redirect, Switch} from 'react-router-dom'
 import { fireauth } from './helpers/firebase';
+import { getMe } from './helpers/api';
 import Auth from "./components/auth/Auth";
 import SessionList from "./components/sessions/SessionList";
 import SessionCreate from "./components/sessions/SessionCreate";
@@ -50,8 +51,16 @@ const App = () => {
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
-    return fireauth().onAuthStateChanged((firebaseUser) => {
-      setAuthed(!!firebaseUser);
+    return fireauth().onIdTokenChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        let user = null;
+        try {
+          user = await getMe();
+        } catch (e) {}
+        setAuthed(!!user);
+      } else {
+        setAuthed(false);
+      }
       setLoading(false);
     });
   }, []);

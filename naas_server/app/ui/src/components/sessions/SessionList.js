@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import { getSessions, deleteSession, deleteInstance } from '../../helpers/api';
-import { useInterval } from '../../helpers/utils';
+import { getGcpLocations } from '../../helpers/gcp';
 import _ from 'lodash';
 import moment from 'moment-timezone';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -21,6 +21,7 @@ import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import CancelIcon from '@material-ui/icons/Cancel';
+import RefreshIcon from '@material-ui/icons/Refresh';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -40,7 +41,9 @@ const useStyles = makeStyles((theme) => ({
     color: '#000',
     marginBottom: 16
   },
-  scheduleSessionBtn: {
+  sessionButtons: {
+    display: 'flex',
+    justifyContent: 'space-between',
     marginBottom: 32
   },
   link: {
@@ -116,6 +119,7 @@ function FormattedSessionDate({ session }) {
   const endAt = moment(session.end_at).format('HH:mm');
   const timezoneAbbr = moment.tz(session.timezone).zoneAbbr();
   const timezoneOffset = moment.tz(session.timezone).format('ZZ');
+
   return (
     <div>
       <Typography>{startAt}-{endAt}</Typography>
@@ -127,6 +131,7 @@ function FormattedSessionDate({ session }) {
 
 const SessionList = () => {
   const classes = useStyles();
+  const gcpLocations = getGcpLocations();
   const [loading, setLoading] = useState(true);
   const [sessionList, setSessionList] = useState([]);
   const [deletingSession, setDeletingSession] = useState(null);
@@ -141,6 +146,7 @@ const SessionList = () => {
       const result = await getSessions();
       setSessionList(result.items);
     } catch (e) {
+      window.Rollbar.warning(e);
       console.log(e);
     }
   }
@@ -152,8 +158,6 @@ const SessionList = () => {
     })();
   }, []);
 
-  useInterval(refreshSessionList, 30 * 1000);
-
   const handleDeleteDialogOpen = session => setDeletingSession(session);
 
   const handleDeleteDialogClose = async (confirm) => {
@@ -164,6 +168,7 @@ const SessionList = () => {
         const result = await getSessions();
         setSessionList(result.items);
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
     }
@@ -181,6 +186,7 @@ const SessionList = () => {
         const result = await getSessions();
         setSessionList(result.items);
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
     }
@@ -203,6 +209,8 @@ const SessionList = () => {
         return 'Warming up';
       } else if (instance.status === 'STOPPED') {
         return 'Stopped';
+      } else if (instance.status === 'FAILED') {
+        return 'Failed';
       } else if (instance.status === 'LAUNCHED') {
         return <CopyableLink url={`${instance.ip}`} display={instance.ip}/>
       } else {
@@ -211,22 +219,38 @@ const SessionList = () => {
     }
   }
 
-  const [previousSessions, upcomingSessions] = _.partition(sessionList || [], (s) => moment(s.end_at).isBefore(moment()));
+  const getGcpLocationDisplay = region => {
+    const location = _.find(gcpLocations, ['region', region]);
+    if (location) {
+      return location.display;
+    }
+  }
+
+  const [previousSessions, upcomingSessions] = _.partition(sessionList || [], (s) => moment.tz(s.end_at, s.timezone).isBefore(moment()));
   
   return (
     loading ?
     <CircularProgress/>
     :
     <div className={classes.root}>
-      <Button
-        color="primary"
-        variant="contained"
-        className={classes.scheduleSessionBtn}
-        component={Link}
-        to="/sessions/create"
-      >
-        Schedule a session
-      </Button>
+      <div className={classes.sessionButtons}>
+        <Button
+          color="primary"
+          variant="contained"
+          className={classes.scheduleSessionBtn}
+          component={Link}
+          to="/sessions/create"
+        >
+          Schedule a session
+        </Button>
+        <Button 
+          variant="outlined"
+          onClick={refreshSessionList}
+          startIcon={<RefreshIcon/>}
+        >
+          Refresh
+        </Button>
+      </div>
       <AppBar position="static" className={classes.appBar}>
         <Tabs value={tabValue} onChange={handleChangeTab}>
           <Tab label="Upcoming Sessions"/>
@@ -245,6 +269,7 @@ const SessionList = () => {
                 <TableCell>Conference</TableCell>
 		*/}
                 <TableCell>Narupa</TableCell>
+                <TableCell>Location</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -277,6 +302,9 @@ const SessionList = () => {
 		  */}
                   <TableCell>
                     {getNarupaContent(session)}
+                  </TableCell>
+                  <TableCell>
+                    {getGcpLocationDisplay(session.location)}
                   </TableCell>
                   <TableCell className={classes.tdActions}>
                     {session.instance.status === 'PENDING' && 
@@ -315,9 +343,10 @@ const SessionList = () => {
                 <TableCell>Time</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Simulation</TableCell>
-	  	{/*
+                <TableCell>Location</TableCell>
+      {/*
                 <TableCell>Recording</TableCell>
-		*/}
+      */}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -337,6 +366,9 @@ const SessionList = () => {
                     >
                       <Typography>{session.simulation.name}</Typography>
                     </Button>
+                  </TableCell>
+                  <TableCell>
+                    {getGcpLocationDisplay(session.location)}
                   </TableCell>
 		  {/*
                   <TableCell>

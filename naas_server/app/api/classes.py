@@ -1,7 +1,6 @@
 from . import utils
 from datetime import datetime
 import pytz
-import logging
 
 
 class Session:
@@ -37,14 +36,6 @@ class Session:
 
         return now > when
 
-    @property
-    def end_at_utc(self):
-        timezone = pytz.timezone(self.timezone)
-        when_naive = utils.to_datetime(self.end_at)
-        when_aware = timezone.localize(when_naive)
-        when_utc = when_aware.astimezone(pytz.utc)
-        return when_utc.strftime('%Y-%m-%dT%H:%M:%S')
-
 
 class User:
     public_fields = ['name', 'email', 'firebase_uid']
@@ -58,6 +49,7 @@ class User:
         self.can_make_simulations_public = d.get('can_make_simulations_public', None)
         self.can_view_stats = d.get('can_view_stats', None)
         self.firebase_uid = d.get('firebase_uid', None)
+        # self.quota_hours_per_month = d.get('quota_hours_per_month', 5)
         self.zoom = UserZoom(d['zoom']) if d.get('zoom', None) is not None else None
 
     def to_dict(self):

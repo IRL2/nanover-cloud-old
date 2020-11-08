@@ -16,7 +16,7 @@ def init_zoom_tokens(zoom_authorization_code, zoom_redirect_uri):
     if 'error' in json:
         logging.warning(json)
         return None
-    json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in'])
+    json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in']).isoformat()
     return classes.UserZoom(json)
 
 
@@ -49,7 +49,7 @@ def refresh_zoom_tokens(user):
     if 'error' in json:
         logging.warning(json)
         return None
-    json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in'])
+    json['access_token_expires_at'] = utils.now_plus_seconds(json['expires_in']).isoformat()
     return classes.UserZoom(json)
 
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import { logout } from "../../helpers/auth";
 import { getMe, updateMeZoom } from "../../helpers/api";
+import { useQuery } from "../../helpers/utils";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -29,10 +29,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-function useQuery() {
-  return new URLSearchParams(useLocation().search);
-}
-
 const Account = () => {
   const classes = useStyles();
   const zoomAuthorizationCode = useQuery().get('code');
@@ -47,12 +43,14 @@ const Account = () => {
           try {
             await updateMeZoom(zoomAuthorizationCode, zoomRedirectUri);
           } catch (e) {
+            window.Rollbar.warning(e);
             console.log(e);
           }
         }
         const result = await getMe();
         setMe(result);
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);
@@ -74,13 +72,17 @@ const Account = () => {
         </div>
 	{/*
         <div className={classes.details}>
+          <Typography className={classes.detailKey}>Quota:</Typography>
+          <Typography>{me.quota_hours_per_month} hours per month</Typography>
+        </div>
+        <div className={classes.details}>
           <Typography className={classes.detailKey}>Zoom:</Typography>
           <Typography>{(me.zoom && me.zoom.access_token) ? 'Connected' : 
           <Button
             variant="contained"
             color="primary"
             component="a"
-            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=q8grQrXVRoSkXhnZvuTjw&redirect_uri=${encodeURIComponent(zoomRedirectUri)}`}
+            href={`https://zoom.us/oauth/authorize?response_type=code&client_id=QfpjF5n7RvWW68tqhsS5tA&redirect_uri=${encodeURIComponent(zoomRedirectUri)}`}
             className={classes.connectToZoom}
             >Connect to Zoom</Button>
           }</Typography>

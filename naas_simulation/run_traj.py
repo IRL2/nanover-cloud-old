@@ -7,6 +7,7 @@ from narupa.app import NarupaFrameApplication
 from narupa.trajectory.frame_server import (
     PLAY_COMMAND_KEY, PAUSE_COMMAND_KEY, RESET_COMMAND_KEY, STEP_COMMAND_KEY,
 )
+from narupa.utilities.timing import yield_interval
 
 
 class TrajectoryRunner:
@@ -20,6 +21,8 @@ class TrajectoryRunner:
         self._seek_target = None
         self._paused_lock = Lock()
         self._paused = False
+        self._framerate_lock = Lock()
+        self._sending_frames_per_seconds = 30
 
         self._register_commands()
     
@@ -36,7 +39,7 @@ class TrajectoryRunner:
         self._app.server.register_command(STEP_COMMAND_KEY, self.step_forward)
         self._app.server.register_command('trajectory/step-backward', self.step_backward)
         self._app.server.register_command('trajectory/seek', self.seek)
-
+        self._app.server.register_command('trajectory/set-framerate', self.set_framerate)
 
 
     def _change_to_frame(self, frame_index):
@@ -56,10 +59,38 @@ class TrajectoryRunner:
     def n_frames(self):
         return self._universe.trajectory.n_frames
     
+    @property
+    def sending_frames_per_seconds(self):
+        return self._sending_frames_per_seconds
+    
+    @sending_frames_per_seconds.setter
+    def sending_frames_per_seconds(self, framerate):
+        with self._framerate_lock:
+            self._sending_frames_per_seconds = framerate
+
+    @property
+    def send_interval(self):
+        return 1 / self.sending_frames_per_seconds
+
+    def _yield_interval(self):
+        """
+        Yield at a set interval, accounting for the time spent outside of this
+        function.
+
+        :param interval: Number of seconds to put between yields
+        """
+        last_yield = time.monotonic() - self.send_interval
+        while True:
+            time_since_yield = time.monotonic() - last_yield
+            wait_duration = max(0., self.send_interval - time_since_yield)
+            time.sleep(wait_duration)
+            yield time.monotonic() - last_yield
+            last_yield = time.monotonic()    
+
     def run(self):
         frame_index = 0
         self._send_frame(0, topology=True)
-        while True:
+        for _ in self._yield_interval():
             with self._seek_lock:
                 if self._seek_target is not None:
                     frame_index = self._seek_target
@@ -73,7 +104,6 @@ class TrajectoryRunner:
                 self._send_frame(frame_index)
             else:
                 time.sleep(1/30)
-
 
     def play(self):
         with self._paused_lock:
@@ -104,6 +134,9 @@ class TrajectoryRunner:
     
     def step_backward(self):
         self.step_offset(-1)
+    
+    def set_framerate(self, framerate):
+        self.sending_frames_per_seconds = framerate
 
 
 def main():
@@ -113,6 +146,7 @@ def main():
     args = parser.parse_args()
 
     with TrajectoryRunner(args.topology, args.trajectory) as runner:
+        print('Ready to go!')
         runner.run()
 
 if __name__ == "__main__":

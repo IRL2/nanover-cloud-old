@@ -11,6 +11,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteIcon from '@material-ui/icons/Delete';
+import AirPlayIcon from '@material-ui/icons/Airplay';
 import EditIcon from '@material-ui/icons/Edit';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -104,6 +105,7 @@ const SimulationList = () => {
         const me = await getMe();
         setMe(me);
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);
@@ -122,6 +124,7 @@ const SimulationList = () => {
         const result = await getSimulations();
         setSimulationList(result.items);
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
     }
@@ -155,6 +158,11 @@ const SimulationList = () => {
             }
             {simulation.user_id === me.id &&
               <CardActions className={classes.cardActions}>
+                <Tooltip title="New session">
+                  <IconButton component={Link} to={`/sessions/create?simulationId=${simulation.id}`} >
+                    <AirPlayIcon />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title="Edit">
                   <IconButton component={Link} to={`/simulations/${simulation.id}`} >
                     <EditIcon />

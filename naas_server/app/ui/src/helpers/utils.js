@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export const useInterval = (callback, delay) => {
 
@@ -17,4 +18,8 @@ export const useInterval = (callback, delay) => {
       return () => clearInterval(id);
     }
   }, [delay]);
+}
+
+export const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
 }

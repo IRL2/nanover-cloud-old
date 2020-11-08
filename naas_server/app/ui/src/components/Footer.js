@@ -7,6 +7,9 @@ const useStyles = makeStyles(theme => ({
     bottom: 0,
     padding: 16,
     fontSize: 11,
+    [theme.breakpoints.down('xs')]: {
+      display: 'none'
+    }
   },
   link: {
     color: '#ff6600'

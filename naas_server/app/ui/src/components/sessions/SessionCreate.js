@@ -3,6 +3,9 @@ import { useHistory, useParams } from "react-router-dom";
 import { makeStyles } from '@material-ui/core/styles';
 import { getSimulations, createSession, updateSession, getSession } from '../../helpers/api';
 import { getSupportedTimezones } from '../../helpers/timezones';
+import { useQuery } from '../../helpers/utils';
+import { getGcpLocations } from '../../helpers/gcp';
+import _ from 'lodash';
 import moment from 'moment-timezone';
 import Button from "@material-ui/core/Button";
 import TextField from '@material-ui/core/TextField';
@@ -12,8 +15,10 @@ import Select from '@material-ui/core/Select';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@material-ui/lab/Alert';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1
   },
@@ -29,17 +34,16 @@ const useStyles = makeStyles((theme) => ({
   },
   formDates: {
     display: 'flex',
-    justifyContent: 'space-evenly',
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down('sm')]: {
       flexFlow: 'column',
       marginBottom: 16
     }
   },
   formDate: {
-    flexGrow: 1,
     marginRight: 16,
     marginBottom: 16,
-    [theme.breakpoints.down('md')]: {
+    minWidth: 305,
+    [theme.breakpoints.down('sm')]: {
       marginRight: 0
     }
   },
@@ -49,26 +53,31 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const DATE_FORMAT = 'YYYY-MM-DDTHH:mm:ss';
+const MAX_DURATION = 5 * 60;
+const DEFAULT_DURATION = 60;
 
 const SessionCreate = () => {
-  const defaultStartAt = moment().startOf('hour').add(1, 'hour');
+  const defaultStartAt = moment().startOf('minute');
+  const simulationId = useQuery().get('simulationId');
+  const gcpLocations = _.groupBy(getGcpLocations(), 'group');
   const classes = useStyles();
   const { sessionId } = useParams();
   const history = useHistory();
   const [session, setSession] = useState({
     start_at: defaultStartAt.format(DATE_FORMAT),
-    end_at: defaultStartAt.add(1, 'hours').format(DATE_FORMAT),
+    end_at: defaultStartAt.add(DEFAULT_DURATION, 'minutes').format(DATE_FORMAT),
     timezone: moment.tz.guess(true),
     branch: 'master',
-    location: 'Frankfurt',
+    location: 'europe-west2',
     record: false,
     simulation: {},
-    //create_conference: true
     create_conference: false
   });
+  const [duration, setDuration] = useState(null);
   const [loading, setLoading] = useState(true);
   const [simulationList, setSimulationList] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -81,15 +90,21 @@ const SessionCreate = () => {
           setSession(sessionResult);
         } else if (result.items.length > 0) {
           setSession(s => {
-            return {...s, simulation: { id: result.items[0].id }}
+            return {...s, simulation: { id: simulationId || result.items[0].id }}
           });
         }
       } catch (e) {
+        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);
     })();
-  }, [sessionId]);
+  }, [sessionId, simulationId]);
+
+  useEffect(() => {
+    const diff = moment.duration(moment(session.end_at).diff(moment(session.start_at)))
+    setDuration(diff.asMinutes());
+  }, [session]);
 
   const onChangeBranch = e => {
     setSession({...session, branch: e.currentTarget.value});
@@ -116,11 +131,15 @@ const SessionCreate = () => {
   const appendSeconds = t => t.length === 16 ? t + ':00' : t
 
   const onChangeStartAt = e => {
-    setSession({...session, start_at: appendSeconds(e.currentTarget.value)});
+    const startAt = appendSeconds(e.currentTarget.value);
+    const endAt = moment(startAt).add(duration, 'minutes').format(DATE_FORMAT);
+    setSession({...session, end_at: endAt, start_at: startAt});
   }
 
-  const onChangeEndAt = e => {
-    setSession({...session, end_at: appendSeconds(e.currentTarget.value)});
+  const onChangeDuration = e => {
+    setDuration(e.currentTarget.value);
+    const endAt = moment(session.start_at).add(e.currentTarget.value, 'minutes').format(DATE_FORMAT);
+    setSession({...session, end_at: endAt});
   }
 
   const onChangeRecord = e => {
@@ -142,8 +161,10 @@ const SessionCreate = () => {
       }
       history.push('/sessions');
     } catch (e) {
+      window.Rollbar.warning(e);
       console.log(e);
-      setSubmitting(false)
+      setSubmitting(false);
+      setSnackbarMessage(e.response.data.message);
     }
   }
 
@@ -157,7 +178,7 @@ const SessionCreate = () => {
     :
     <div className={classes.root}>
       <form noValidate className={classes.form}>
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={classes.formControl} required>
           <InputLabel>Simulation</InputLabel>
           <Select
             native
@@ -173,7 +194,7 @@ const SessionCreate = () => {
         </FormControl>
         <TextField
           variant="outlined"
-          label="Description (optional)"
+          label="Description"
           defaultValue={session.description}
           onChange={onChangeDescription}
           className={classes.formControl}
@@ -189,20 +210,22 @@ const SessionCreate = () => {
             inputProps={{ 
               'min': defaultStartAt.format(DATE_FORMAT)
             }}
+            required
           />
-          <TextField
-            label="End at"
-            type="datetime-local"
-            variant="outlined"
-            defaultValue={session.end_at}
-            onChange={onChangeEndAt}
-            className={classes.formDate}
-            inputProps={{ 
-              'min': session.start_at,
-              'max': moment(session.start_at).add(2, 'hours').format(DATE_FORMAT)
-            }}
-          />
-          <FormControl variant="outlined">
+          <FormControl variant="outlined" className={classes.formDate} required>
+            <InputLabel>Duration</InputLabel>
+            <Select
+              native
+              defaultValue={duration}
+              onChange={onChangeDuration}
+              label="Duration"
+            >
+              {_.range(15, MAX_DURATION + 15, 15).map(i =>
+                <option key={i} value={i}>{`${Math.floor(i / 60)}h ${i % 60}m`}</option>
+              )}
+            </Select>
+          </FormControl>
+          <FormControl variant="outlined" required>
             <InputLabel>Timezone</InputLabel>
             <Select
               native
@@ -218,7 +241,7 @@ const SessionCreate = () => {
             </Select>
           </FormControl>
         </div>
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={classes.formControl} required>
           <InputLabel>Server location</InputLabel>
           <Select
             native
@@ -226,9 +249,13 @@ const SessionCreate = () => {
             onChange={onChangeLocation}
             label="Server location"
           >
-            <option value='Frankfurt'>Frankfurt</option>
-            <option value='London'>London</option>
-            <option value='Ashburn'>Washington, D.C.</option>
+            {Object.keys(gcpLocations).map(group =>
+                <optgroup label={group} key={group}>
+                  {gcpLocations[group].map(location =>
+                    <option key={location.region} value={location.region}>{location.display}</option>
+                  )}
+                </optgroup>
+            )}
           </Select>
         </FormControl>
         <TextField
@@ -237,6 +264,7 @@ const SessionCreate = () => {
           defaultValue={session.branch}
           onChange={onChangeBranch}
           className={classes.formControl}
+          required
         />
 	{/*
         <FormControlLabel variant="outlined" className={classes.formControl}
@@ -245,6 +273,7 @@ const SessionCreate = () => {
               defaultChecked={session.record}
               onChange={onChangeRecord}
               color="primary"
+              disabled
             />
           }
           label="Record session"
@@ -258,6 +287,7 @@ const SessionCreate = () => {
                 defaultChecked={session.create_conference}
                 onChange={onChangeCreateConference}
                 color="primary"
+                disabled
               />
             }
             label="Create Zoom meeting"
@@ -282,6 +312,17 @@ const SessionCreate = () => {
           Cancel
         </Button>
       </form> 
+      <Snackbar 
+        open={!!snackbarMessage} 
+        autoHideDuration={6000} 
+        onClose={() => setSnackbarMessage(null)} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert 
+            onClose={() => setSnackbarMessage(null)} 
+            severity="error">
+              {snackbarMessage}
+          </Alert>
+      </Snackbar>
     </div>
   )
 }

@@ -4,10 +4,11 @@ import GoogleButton from 'react-google-button'
 import Footer from '../Footer';
 import { makeStyles } from '@material-ui/core/styles';
 import { login, loginWithGoogle, register } from "../../helpers/auth";
-import { createUser } from "../../helpers/api";
+import { createUser, getMe } from "../../helpers/api";
+import { fireauth } from '../..//helpers/firebase';
 import TextField from "@material-ui/core/TextField"
 import Button from "@material-ui/core/Button"
-import napuraLogo from '../../images/napura-192.png';
+import narupaLogo from '../../images/narupa-192.png';
 import Typography from '@material-ui/core/Typography';
 
 const useStyles = makeStyles((theme) => ({
@@ -17,7 +18,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     width: 500,
-    margin: '120px auto 0 auto',
+    margin: '120px auto 64px auto',
     padding: '32px 0',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     borderRadius: 16
@@ -78,10 +79,12 @@ const Auth = ({ registering = false }) => {
       if (registering) {
         const firebaseResponse = await register(email, password);
         await createUser(firebaseResponse.user, name);
+        await fireauth().currentUser.getIdToken(true);
       } else {
         await login(email, password);
       }
     } catch (e) {
+      window.Rollbar.warning(e);
       console.log(e);
       setError(`There was a problem. ${e.message}`);
       setSubmitting(false);
@@ -95,13 +98,21 @@ const Auth = ({ registering = false }) => {
       setSubmitting(true);
       try {
         const firebaseResponse = await loginWithGoogle();
-        await createUser(firebaseResponse.user);
+        await createUser(firebaseResponse.user, name);
+        await fireauth().currentUser.getIdToken(true);
       } catch (e) {
+        window.Rollbar.warning(e);
+        console.log(e);
         setError(`There was a problem. ${e.message}`);
         setSubmitting(false);
       }
     } else {
-      loginWithGoogle();
+      await loginWithGoogle();
+      try {
+        await getMe();
+      } catch (e) {
+        setError('Could not find a login for your Google account. Do you need to register?');
+      }
     }
   }
 
@@ -119,7 +130,7 @@ const Auth = ({ registering = false }) => {
 
   return (
     <div className={classes.root}>
-      <img src={napuraLogo} alt="narupa"/>
+      <img src={narupaLogo} alt="narupa"/>
       <Typography variant="h6" className={classes.title}>
         {registering ? 'Register' : 'Login'}
       </Typography>

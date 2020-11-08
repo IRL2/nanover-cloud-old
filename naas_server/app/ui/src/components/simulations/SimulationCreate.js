@@ -11,6 +11,8 @@ import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import Alert from '@material-ui/lab/Alert';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -106,6 +108,7 @@ const SimulationCreate = () => {
   const [uploadTrajectoryProgress, setUploadTrajectoryProgress] = useState(null);
   const [uploadRenderingProgress, setUploadRenderingProgress] = useState(null);
   const [loading, setLoading] = useState(!!simulationId);
+  const [snackbarMessage, setSnackbarMessage] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -114,6 +117,7 @@ const SimulationCreate = () => {
           const result = await getSimulation(simulationId);
           setSimulation(result);
         } catch (e) {
+          window.Rollbar.warning(e);
           console.log(e);
         }
         setLoading(false);
@@ -136,6 +140,7 @@ const SimulationCreate = () => {
         const progress = Math.round(100 * snapshot.bytesTransferred / snapshot.totalBytes);
         onUpdateProgress(progress);
       }, e => {
+        window.Rollbar.warning(e);
         console.log(e);
         onUpdateProgress(null);
       }, () => {
@@ -202,8 +207,10 @@ const SimulationCreate = () => {
       }
       history.push('/simulations');
     } catch (e) {
+      window.Rollbar.warning(e);
       console.log(e);
       setSubmitting(false);
+      setSnackbarMessage(e.response.data.message);
     }
   };
   
@@ -223,6 +230,7 @@ const SimulationCreate = () => {
           defaultValue={simulation.name}
           onChange={onChangeName}
           className={classes.formControl}
+          required
         />
         <TextField
           variant="outlined"
@@ -271,7 +279,7 @@ const SimulationCreate = () => {
           onChange={onChangeImage}
           uploadProgress={uploadImageProgress}
         />
-        <FormControl variant="outlined" className={classes.formControl}>
+        <FormControl variant="outlined" className={classes.formControl} required>
           <InputLabel>Runner</InputLabel>
           <Select
             native
@@ -348,6 +356,17 @@ const SimulationCreate = () => {
           Cancel
         </Button>
       </form>
+      <Snackbar 
+        open={!!snackbarMessage} 
+        autoHideDuration={6000} 
+        onClose={() => setSnackbarMessage(null)} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+          <Alert 
+            onClose={() => setSnackbarMessage(null)} 
+            severity="error">
+              {snackbarMessage}
+          </Alert>
+      </Snackbar>
     </div>
   )
 }
