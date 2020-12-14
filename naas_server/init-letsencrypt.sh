@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains=(beta.narupa.xyz)
+domains=(app.narupa.xyz)
 rsa_key_size=4096
 data_path="./data/certbot"
 email="hello@narupa.xyz" # Adding a valid address is strongly recommended
