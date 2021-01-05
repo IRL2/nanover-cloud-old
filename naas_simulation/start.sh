@@ -58,7 +58,7 @@ case "${runner_request}" in
         echo "Getting simulation"
         filename=$(get_metadata simulation)
         wget -O simulation.xml "${filename}"
-        $PYTHON run_omm.py simulation.xml
+        narupa-omm-server simulation.xml
         ;;
     'trajectory')
         echo "Runner is trajectory"
