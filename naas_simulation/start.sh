@@ -51,7 +51,7 @@ case "${runner_request}" in
         echo "Getting simulation"
         filename=$(get_metadata simulation)
         wget -O simulation.xml "${filename}"
-        $PYTHON run_ase.py simulation.xml
+        narupa-omm-ase simulation.xml
         ;;
     'omm')
         echo "Runner is omm"
