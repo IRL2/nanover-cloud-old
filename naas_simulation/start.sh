@@ -24,7 +24,7 @@ conda init bash
 source $HOME/.bashrc
 conda update -y -n base -c defaults conda
 conda install -y -c conda-forge python=3.7
-conda install -y -c omnia/label/cuda101 -c conda-forge openmm MDAnalysis MDAnalysisTests ase mpi4py
+conda install -y -c conda-forge openmm MDAnalysis MDAnalysisTests ase mpi4py
 pip install --ignore-installed grpcio
 PYTHON=$MINICONDA_PATH/bin/python
 export PATH=$MINICONDA_PATH/bin:$PATH
