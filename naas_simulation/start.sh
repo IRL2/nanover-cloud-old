@@ -15,30 +15,26 @@ function terminate() {
 duration=$(get_metadata duration)
 (sleep $duration; terminate)&
 
-# Install conda
-MINICONDA_PATH="$HOME/miniconda"
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-bash miniconda.sh -b -p $MINICONDA_PATH && rm miniconda.sh
+# Path declarations. TODO: Clean these up
+MINICONDA_PATH="/miniconda"
 PATH="${MINICONDA_PATH}/bin:$PATH"
-conda init bash
 source $HOME/.bashrc
-conda update -y -n base -c defaults conda
-conda install -y -c conda-forge python=3.7
-conda install -y -c conda-forge openmm MDAnalysis MDAnalysisTests ase mpi4py
-pip install --ignore-installed grpcio
 PYTHON=$MINICONDA_PATH/bin/python
 export PATH=$MINICONDA_PATH/bin:$PATH
 
-# Get the lastest narupa
+# Get the lastest narupa. Master branch is installed on the base image
+narupa_protocol_git="https://gitlab.com/intangiblerealities/narupa-protocol.git"
+narupa_protocol_git_dir="narupa-protocol"
 branch=$(get_metadata branch)
-if [[ $(echo $branch | grep html | wc -l) -gt 0 ]]; then
-    branch='master'
+remote_commit=$(git ls-remote $narupa_protocol_git | grep refs/heads/$branch | cut -f 1)
+local_commit=$(git -C $narupa_protocol_git_dir rev-parse HEAD)
+if [ "$local_commit" != "$remote_commit" ]; then
+  rm -rf $narupa_protocol_git_dir
+  git clone $narupa_protocol_git --branch $branch $narupa_protocol_git_dir
+  cd $narupa_protocol_git_dir
+  ./compile.sh
+  cd ..
 fi
-rm -rf narupa-protocol
-git clone https://gitlab.com/intangiblerealities/narupa-protocol.git --branch $branch narupa-protocol
-cd narupa-protocol
-./compile.sh
-cd ..
 
 # Start the http helper server
 (FLASK_APP=simulation_server.py $PYTHON -m flask run --host=0.0.0.0)&
