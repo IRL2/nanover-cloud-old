@@ -102,8 +102,10 @@ const SessionCreate = () => {
   }, [sessionId, simulationId]);
 
   useEffect(() => {
-    const diff = moment.duration(moment(session.end_at).diff(moment(session.start_at)))
-    setDuration(diff.asMinutes());
+    const diff = moment.duration(moment(session.end_at).diff(moment(session.start_at)));
+    if (diff.asMinutes() > 0) {
+      setDuration(diff.asMinutes());
+    }
   }, [session]);
 
   const onChangeBranch = e => {
