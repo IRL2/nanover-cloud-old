@@ -28,7 +28,7 @@
           captureUncaught: true,
           captureUnhandledRejections: true,
           payload: {
-              environment: location.hostname === "localhost" ? "dev": "live"
+	      environment: location.hostname === "app.narupa.xyz" ? "live" : location.hostname === "beta.narupa.xyz" ? "beta" : "dev"
           }
       };
       // Rollbar Snippet
