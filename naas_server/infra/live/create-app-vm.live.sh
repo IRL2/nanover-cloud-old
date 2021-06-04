@@ -1,4 +1,5 @@
 #!/bin/bash
+gcloud config set project narupa-web-ui
 
 gcloud beta compute --project=narupa-web-ui instances create narupa-web-ui \
 	--zone=europe-west2-a \
@@ -7,7 +8,7 @@ gcloud beta compute --project=narupa-web-ui instances create narupa-web-ui \
 	--network-tier=PREMIUM \
 	--maintenance-policy=MIGRATE \
 	--scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
-	--tags=narupa-web \
+	--tags=narupa-web-ui \
 	--image=debian-10-buster-v20200714 \
 	--image-project=debian-cloud \
 	--boot-disk-size=10GB \
@@ -25,11 +26,11 @@ gcloud compute ssh narupa-web-ui -- 'mkdir -p data/{nginx,docker,app}'
 
 gcloud compute scp nginx.live.conf narupa-web-ui:data/nginx/app.conf
 gcloud compute scp docker-compose.live.yml narupa-web-ui:docker-compose.yml
-gcloud compute scp init-letsencrypt.sh narupa-web-ui:init-letsencrypt.sh
+gcloud compute scp init-letsencrypt.live.sh narupa-web-ui:init-letsencrypt.sh
 
 gcloud compute ssh narupa-web-ui -- '/bin/bash init-letsencrypt.sh'
 
 echo "Now do the following:"
 echo "\t- ssh onto the box with: gcloud compute ssh narupa-web-ui"
-echo "\t- copy the firebase admin sdk key json file into ~/data/app/narupa-web-firebase-adminsdk.json"
-echo "\t- copy the google cloud key json file into ~/data/app/narupa-web.json"
+echo "\t- copy the firebase admin sdk key json file into ~/data/app/narupa-web-firebase-adminsdk-*.json"
+echo "\t- copy the google cloud key json file into ~/data/app/narupa-web-ui-*.json"

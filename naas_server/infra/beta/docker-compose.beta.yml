@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  narupa-web-ui:
+    image: eu.gcr.io/narupa-web-ui/narupa-web-ui:latest
+    restart: unless-stopped
+    volumes:
+      - ./data/app:/data/app
+    ports:
+      - 8000:8000
+    environment:
+      - "FIREBASE_CREDENTIALS_PATH=/data/app/narupa-web-ui-beta-firebase-adminsdk-lg76q-5505a1150a.json"
+      - "GOOGLE_APPLICATION_CREDENTIALS=/data/app/narupa-web-ui-a46fef979d13.json"
+      - "ZOOM_CLIENT_SECRET="
+      - "ZOOM_CLIENT_ID="
+      - "NARUPA_SCHEDULER=True"
+      - "NAAS_SIMULATION_TARBALL=https://gitlab.com/intangiblerealities/covid-docker/-/archive/gcp-head/covid-docker-gcp-head.tar?path=naas_simulation"
+      - "NARUPA_IMAGE=narupa-image-202011190816"
+    logging:
+      driver: gcplogs
+      options:
+        gcp-project: narupa-web-ui
+  nginx:
+    image: nginx:1.15-alpine
+    restart: unless-stopped
+    volumes:
+      - ./data/nginx:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
