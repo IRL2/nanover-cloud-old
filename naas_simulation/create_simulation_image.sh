@@ -2,11 +2,12 @@
 
 dt=$(date '+%Y%m%d%H%M');
 image_name="narupa-image-${dt}"
+zone="europe-west2-a"
 
 echo "Launching instance"
 
 gcloud compute --project=narupa-web-ui instances create $image_name \
-	--zone=europe-west2-a \
+	--zone=$zone \
 	--machine-type=n1-standard-1 \
 	--subnet=default \
 	--network-tier=PREMIUM \
@@ -31,11 +32,15 @@ sleep 60
 echo "Please run this command and follow the instructions: gcloud compute ssh $image_name"
 read -p "Once finished, press enter to continue"
 
+# Update packages
+gcloud compute scp 'update_simulation_image.sh' "$image_name:"
+gcloud compute ssh $image_name -- 'sudo bash update_simulation_image.sh'
+
 # echo "Stopping instance"
 gcloud compute instances stop $image_name
 
 # echo "Creating image"
-gcloud compute images create $image_name --source-disk=$image_name  --source-disk-zone=europe-west2-a
+gcloud compute images create $image_name --source-disk=$image_name  --source-disk-zone=$zone
 
 # echo "Deleting instance"
-gcloud compute instances delete $image_name --delete-disks=all --quiet
+gcloud compute instances delete $image_name --delete-disks=all --quiet --zone=$zone
