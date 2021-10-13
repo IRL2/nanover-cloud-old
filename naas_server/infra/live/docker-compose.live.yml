@@ -15,7 +15,7 @@ services:
       - "ZOOM_CLIENT_ID="
       - "NARUPA_SCHEDULER=True"
       - "NAAS_SIMULATION_TARBALL=https://gitlab.com/intangiblerealities/covid-docker/-/archive/gcp-head/covid-docker-gcp-head.tar?path=naas_simulation"
-      - "NARUPA_IMAGE=narupa-image-202106041533"
+      - "NARUPA_IMAGE=narupa-image-202110121550"
     logging:
       driver: gcplogs
       options:
