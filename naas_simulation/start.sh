@@ -19,9 +19,10 @@ export PATH=$MINICONDA_PATH/bin:$PATH
 
 # Limit the lifetime of the instance. Terminate the instance at the requested
 # end time if it did not terminate before.
+# We allow a few minutes of grace period for a better user experience.
 end_time=$(get_metadata end_time)
 timezone=$(get_metadata timezone)
-duration=$($PYTHON ./minutes_until.py ${end_time} ${timezone})
+duration=$($PYTHON ./minutes_until.py ${end_time} ${timezone} 3)
 (sleep $duration; terminate)&
 
 # Get the lastest narupa. Master branch is installed on the base image
