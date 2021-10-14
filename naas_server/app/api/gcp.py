@@ -34,7 +34,7 @@ def get_zone_for_region(region):
 
 
 # https://cloud.google.com/compute/docs/reference/rest/v1/instances/insert
-def create_instance(region, branch, runner, duration, simulation=None, topology=None, trajectory=None):
+def create_instance(region, branch, runner, duration, end_time=None, simulation=None, topology=None, trajectory=None):
     zone = get_zone_for_region(region)
 
     machine_type = 'n1-highcpu-2'
@@ -55,6 +55,8 @@ def create_instance(region, branch, runner, duration, simulation=None, topology=
         metadata.append({ 'key': 'topology', 'value': topology })
     if trajectory:
         metadata.append({ 'key': 'trajectory', 'value': trajectory })
+    if end_time is not None:
+        metadata.append({'key': 'end_time', 'value': end_time})
 
     config = {
         'name': name,
