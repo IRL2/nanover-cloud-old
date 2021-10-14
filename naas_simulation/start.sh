@@ -10,17 +10,18 @@ function terminate() {
     gcloud --quiet compute instances delete $NAME --zone=$ZONE
 }
 
-# Limit the lifetime of the instance. Terminate the instance after the given
-# duration if nothing else did it before.
-duration=$(get_metadata duration)
-(sleep $duration; terminate)&
-
 # Path declarations. TODO: Clean these up
 MINICONDA_PATH="/miniconda"
 PATH="${MINICONDA_PATH}/bin:$PATH"
 source $HOME/.bashrc
 PYTHON=$MINICONDA_PATH/bin/python
 export PATH=$MINICONDA_PATH/bin:$PATH
+
+# Limit the lifetime of the instance. Terminate the instance at the requested
+# end time if it did not terminate before.
+end_time=$(get_metadata end_time)
+duration=$($PYTHON ./minutes_until.py ${end_time})
+(sleep $duration; terminate)&
 
 # Get the lastest narupa. Master branch is installed on the base image
 narupa_protocol_git="https://gitlab.com/intangiblerealities/narupa-protocol.git"
