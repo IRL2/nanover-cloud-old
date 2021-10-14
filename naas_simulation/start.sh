@@ -16,12 +16,12 @@ PATH="${MINICONDA_PATH}/bin:$PATH"
 source $HOME/.bashrc
 PYTHON=$MINICONDA_PATH/bin/python
 export PATH=$MINICONDA_PATH/bin:$PATH
-$PYTHON -m pip install pytz
 
 # Limit the lifetime of the instance. Terminate the instance at the requested
 # end time if it did not terminate before.
 end_time=$(get_metadata end_time)
-duration=$($PYTHON ./minutes_until.py ${end_time})
+timezone=$(get_metadata timezone)
+duration=$($PYTHON ./minutes_until.py ${end_time} ${timezone})
 (sleep $duration; terminate)&
 
 # Get the lastest narupa. Master branch is installed on the base image
