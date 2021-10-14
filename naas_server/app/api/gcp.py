@@ -34,7 +34,7 @@ def get_zone_for_region(region):
 
 
 # https://cloud.google.com/compute/docs/reference/rest/v1/instances/insert
-def create_instance(region, branch, runner, duration, simulation=None, topology=None, trajectory=None):
+def create_instance(region, branch, runner, duration, end_time, timezone, simulation=None, topology=None, trajectory=None):
     zone = get_zone_for_region(region)
 
     machine_type = 'n1-highcpu-2'
@@ -46,7 +46,9 @@ def create_instance(region, branch, runner, duration, simulation=None, topology=
         { 'key': 'google-logging-enabled', 'value': 'true' },
         { 'key': 'branch', 'value': branch },
         { 'key': 'runner', 'value': runner },
-        { 'key': 'duration', 'value': duration},
+        { 'key': 'duration', 'value': duration },
+        { 'key': 'end_time', 'value': end_time },
+        { 'key': 'timezone', 'value': timezone },
         { 'key': 'startup-script', 'value': '#!/bin/bash\nwget -O tmp.tar "{}"\ntar xf tmp.tar --strip-components=2\nchmod +x start.sh\n./start.sh'.format(NAAS_SIMULATION_TARBALL)}
     ]
     if simulation:
