@@ -333,7 +333,16 @@ def init(app):
             duration = int(utils.difference_in_seconds(session.warm_up_at, session.end_at))
 
             try:
-                response = gcp.create_instance(session.location, session.branch, runner, duration, end_time=session.end_at, simulation=simulation, topology=topology, trajectory=trajectory)
+                response = gcp.create_instance(
+                    session.location,
+                    session.branch,
+                    runner, duration,
+                    session.end_at,
+                    session.timezone,
+                    simulation=simulation,
+                    topology=topology,
+                    trajectory=trajectory,
+                )
 
                 if response['status'] in ['PROVISIONING', 'STAGING', 'RUNNING']:
                     session.instance.status = 'WARMING'
