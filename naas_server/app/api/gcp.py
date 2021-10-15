@@ -1,11 +1,11 @@
 import os
+from collections import namedtuple
 from . import utils
 import requests
 import googleapiclient.discovery
 
 PROJECT = 'narupa-web-ui'
 NAAS_SIMULATION_TARBALL = os.environ.get('NAAS_SIMULATION_TARBALL')
-NARUPA_IMAGE = os.environ.get('NARUPA_IMAGE')
 
 
 def get_compute_client():
@@ -33,8 +33,34 @@ def get_zone_for_region(region):
     return '{}-{}'.format(region, zone)
 
 
+def choose_image(tag: str) -> str:
+    """
+    Look for the latest VM image with the requested tag set to 'true'.
+
+    This VM image is the one to use for that tag. The function returns the name
+    of the image if one is found, and raises a ValueError otherwise.
+    """
+    Image = namedtuple('Image', ['timestamp', 'name'])
+    result = []
+    service = get_compute_client()
+    request = service.images().list(project=PROJECT)
+    while request is not None:
+        response = request.execute()
+        for image in response['items']:
+            if image.get('labels', {}).get(tag) == 'true':
+                result.append(Image(image['creationTimestamp'], image['name']))
+        request = service.images().list_next(
+            previous_request=request, previous_response=response)
+    if not result:
+        raise ValueError(f'No image was found with the tag "{tag}" set to true.')
+    # Ideally, the filtering and the sorting should be done directly in the
+    # API with the orderBy and the filter arguments. I did not manage yet,
+    # though.
+    return sorted(result)[-1].name
+
+
 # https://cloud.google.com/compute/docs/reference/rest/v1/instances/insert
-def create_instance(region, branch, runner, duration, end_time, timezone, simulation=None, topology=None, trajectory=None):
+def create_instance(tag, region, branch, runner, duration, end_time, timezone, simulation=None, topology=None, trajectory=None):
     zone = get_zone_for_region(region)
 
     machine_type = 'n1-highcpu-2'
@@ -85,7 +111,7 @@ def create_instance(region, branch, runner, duration, end_time, timezone, simula
             'autoDelete': True,
             'deviceName': name,
             'initializeParams': {
-                "sourceImage": "projects/narupa-web-ui/global/images/{}".format(NARUPA_IMAGE),
+                "sourceImage": "projects/narupa-web-ui/global/images/{}".format(choose_image(tag)),
                 'diskType': 'projects/{}/zones/{}/diskTypes/pd-standard'.format(PROJECT, zone),
                 'diskSizeGb': disk_size_gb
             },
