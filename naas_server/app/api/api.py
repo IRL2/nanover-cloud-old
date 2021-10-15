@@ -6,6 +6,11 @@ from flask_apscheduler import APScheduler
 import firebase_admin
 from firebase_admin import auth as firebase_auth, credentials as firebase_credentials, firestore
 
+# VM images are labelled so that the image to use has the target tag set to
+# 'true'. For a given tag, the image to use is the latest one with that tag set
+# to 'true'. The tag to use in production is 'uselive'.
+IMAGE_TAG = os.environ.get('IMAGE_TAG', 'uselive')
+
 
 def init(app):
 
@@ -18,6 +23,10 @@ def init(app):
 
     firebase_admin.initialize_app(firebase_credentials.Certificate(os.environ.get('FIREBASE_CREDENTIALS_PATH')))
     db = firestore.client()
+
+    @app.route('/test/images')
+    def list_images():
+        return str(gcp.choose_image(IMAGE_TAG))
 
     @scheduler.task('cron', id='narupa_scheduler', minute='*')
     @app.route('/api/narupa-scheduler')
@@ -334,6 +343,7 @@ def init(app):
 
             try:
                 response = gcp.create_instance(
+                    IMAGE_TAG,
                     session.location,
                     session.branch,
                     runner, duration,
