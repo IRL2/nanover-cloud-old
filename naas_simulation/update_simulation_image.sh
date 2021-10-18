@@ -16,13 +16,18 @@ ARCHITECTURE='x84_64'
 #wget https://developer.download.nvidia.com/compute/cuda/repos/${DISTRO}/${ARCHITECTURE}/cuda-${DISTRO}.pin
 #sudo mv cuda-${DISTRO}.pin /etc/apt/preferences.d/cuda-repository-pin-600
 
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
-sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+#wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+#sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+#sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+#sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
+wget https://developer.download.nvidia.com/compute/cuda/11.4.2/local_installers/cuda-repo-debian10-11-4-local_11.4.2-470.57.02-1_amd64.deb
+sudo dpkg -i cuda-repo-debian10-11-4-local_11.4.2-470.57.02-1_amd64.deb
+sudo apt-key add /var/cuda-repo-debian10-11-4-local/7fa2af80.pub
+sudo add-apt-repository contrib
 
 sudo apt-get update
-sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cuda
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y install cuda-drivers
 
 MINICONDA_PATH="/miniconda"
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
