@@ -109,6 +109,7 @@ const Auth = ({ registering = false }) => {
       try {
         await getMe();
       } catch (e) {
+        console.log(e);
         setError('Could not find a login for your Google account. Do you need to register?');
       }
     }
