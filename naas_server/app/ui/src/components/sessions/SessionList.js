@@ -146,7 +146,6 @@ const SessionList = () => {
       const result = await getSessions();
       setSessionList(result.items);
     } catch (e) {
-      window.Rollbar.warning(e);
       console.log(e);
     }
   }
@@ -168,7 +167,6 @@ const SessionList = () => {
         const result = await getSessions();
         setSessionList(result.items);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
     }
@@ -186,7 +184,6 @@ const SessionList = () => {
         const result = await getSessions();
         setSessionList(result.items);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
     }

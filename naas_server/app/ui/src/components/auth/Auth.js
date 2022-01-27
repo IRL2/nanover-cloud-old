@@ -84,7 +84,6 @@ const Auth = ({ registering = false }) => {
         await login(email, password);
       }
     } catch (e) {
-      window.Rollbar.warning(e);
       console.log(e);
       setError(`There was a problem. ${e.message}`);
       setSubmitting(false);
@@ -101,7 +100,6 @@ const Auth = ({ registering = false }) => {
         await createUser(firebaseResponse.user, name);
         await fireauth().currentUser.getIdToken(true);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
         setError(`There was a problem. ${e.message}`);
         setSubmitting(false);
@@ -111,6 +109,7 @@ const Auth = ({ registering = false }) => {
       try {
         await getMe();
       } catch (e) {
+        console.log(e);
         setError('Could not find a login for your Google account. Do you need to register?');
       }
     }

@@ -94,7 +94,6 @@ const SessionCreate = () => {
           });
         }
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);
@@ -163,7 +162,6 @@ const SessionCreate = () => {
       }
       history.push('/sessions');
     } catch (e) {
-      window.Rollbar.warning(e);
       console.log(e);
       setSubmitting(false);
       setSnackbarMessage(e.response.data.message);

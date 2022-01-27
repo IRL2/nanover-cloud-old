@@ -43,14 +43,12 @@ const Account = () => {
           try {
             await updateMeZoom(zoomAuthorizationCode, zoomRedirectUri);
           } catch (e) {
-            window.Rollbar.warning(e);
             console.log(e);
           }
         }
         const result = await getMe();
         setMe(result);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);

@@ -105,7 +105,6 @@ const SimulationList = () => {
         const me = await getMe();
         setMe(me);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
       setLoading(false);
@@ -124,7 +123,6 @@ const SimulationList = () => {
         const result = await getSimulations();
         setSimulationList(result.items);
       } catch (e) {
-        window.Rollbar.warning(e);
         console.log(e);
       }
     }
