@@ -117,7 +117,6 @@ const SimulationCreate = () => {
           const result = await getSimulation(simulationId);
           setSimulation(result);
         } catch (e) {
-          window.Rollbar.warning(e);
           console.log(e);
         }
         setLoading(false);
@@ -140,7 +139,6 @@ const SimulationCreate = () => {
         const progress = Math.round(100 * snapshot.bytesTransferred / snapshot.totalBytes);
         onUpdateProgress(progress);
       }, e => {
-        window.Rollbar.warning(e);
         console.log(e);
         onUpdateProgress(null);
       }, () => {
@@ -207,7 +205,6 @@ const SimulationCreate = () => {
       }
       history.push('/simulations');
     } catch (e) {
-      window.Rollbar.warning(e);
       console.log(e);
       setSubmitting(false);
       setSnackbarMessage(e.response.data.message);
