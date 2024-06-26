@@ -67,7 +67,7 @@ def create_instance(tag, region, branch, runner, duration, end_time, timezone, s
     gpu_type = 'nvidia-tesla-t4'
     disk_size_gb = '50'
 
-    name = 'narupa-simulation-{}'.format(utils.generate_short_id())
+    name = 'nanover-simulation-{}'.format(utils.generate_short_id())
     metadata = [
         { 'key': 'google-logging-enabled', 'value': 'true' },
         { 'key': 'branch', 'value': branch },
@@ -95,7 +95,7 @@ def create_instance(tag, region, branch, runner, duration, end_time, timezone, s
             'items': metadata
         },
         'tags': {
-            'items': [ 'narupa-simulation' ]
+            'items': [ 'nanover-simulation' ]
         },
         'guestAccelerators': [
             {
