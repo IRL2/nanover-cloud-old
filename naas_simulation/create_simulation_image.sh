@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dt=$(date '+%Y%m%d%H%M');
-image_name="narupa-image-${dt}"
+image_name="nanover-image-${dt}"
 zone="europe-west2-a"
 
 echo "Launching instance"
