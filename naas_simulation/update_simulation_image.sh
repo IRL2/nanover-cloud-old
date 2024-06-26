@@ -36,12 +36,12 @@ PATH="${MINICONDA_PATH}/bin:$PATH"
 conda init bash
 source $HOME/.bashrc
 conda update -y -n base -c defaults conda
-conda install -y -c conda-forge python=3.8
+conda install -y -c conda-forge python=3.11
 conda install -y -c conda-forge openmm MDAnalysis MDAnalysisTests ase mpi4py
 pip install --ignore-installed grpcio
 PYTHON=$MINICONDA_PATH/bin/python
 export PATH=$MINICONDA_PATH/bin:$PATH
 
-git clone https://gitlab.com/intangiblerealities/narupa-protocol.git --branch master narupa-protocol
-cd narupa-protocol
+git clone https://github.com/IRL2/nanover-protocol.git --branch main nanover-protocol
+cd nanover-protocol
 ./compile.sh --no-dotnet
