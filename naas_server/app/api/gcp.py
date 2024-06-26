@@ -4,7 +4,7 @@ from . import utils
 import requests
 import googleapiclient.discovery
 
-PROJECT = 'narupa-web-ui'
+PROJECT = 'nanover-web-ui'
 NAAS_SIMULATION_TARBALL = os.environ.get('NAAS_SIMULATION_TARBALL')
 
 
@@ -111,7 +111,7 @@ def create_instance(tag, region, branch, runner, duration, end_time, timezone, s
             'autoDelete': True,
             'deviceName': name,
             'initializeParams': {
-                "sourceImage": "projects/narupa-web-ui/global/images/{}".format(choose_image(tag)),
+                "sourceImage": "projects/nanover-web-ui/global/images/{}".format(choose_image(tag)),
                 'diskType': 'projects/{}/zones/{}/diskTypes/pd-standard'.format(PROJECT, zone),
                 'diskSizeGb': disk_size_gb
             },
